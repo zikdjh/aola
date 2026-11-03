@@ -5,6 +5,8 @@ client/cache/
 client/docs/
 # 字体副本（由 client/tools/make_cjk_font.py 从系统字体生成）
 client/web/fonts/
+# 旧版备用运行时（本地保留，不入库；需要时从 Ruffle 官方 release 重新下载）
+client/web/ruffle-stable/
 # 第三方依赖
 client/tools/node_modules/
 # 备份文件
