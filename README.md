@@ -210,3 +210,18 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 | `zone_live.etl` / `zone_real.etl` / `loginmod_body.bin` | `aola/captures/` |
 
 所有文档与脚本内的绝对路径已同步替换；服务器验证：`/status`、`/game`、镜像资源均 200。
+
+---
+
+## 8. 许可
+
+本项目代码与文档采用 [MIT License](LICENSE)（Copyright (c) 2026 The Aola Ruffle Client Authors）。
+
+第三方组件与资源的许可另行遵循：
+
+- `client/web/ruffle/`、`client/web/ruffle-stable/`：内置的 [Ruffle](https://ruffle.rs) 运行时，
+  遵循其自身许可（MIT / Apache-2.0）
+- `client/tools/node_modules/`：npm 依赖，遵循各包许可（如 `lzma` MIT）
+- 游戏客户端资源（`client/cache/` 及仓库外的官方 SWF/数据）版权归原权利人，**不在本仓库分发**
+- `client/web/fonts/`（由 `make_cjk_font.py` 从 Windows 系统字体生成）同样不入库，
+  使用/再分发前请核对系统字体自身的授权条款

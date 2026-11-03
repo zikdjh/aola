@@ -1,4 +1,8 @@
 {
+  "name": "aola-tools",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
   "dependencies": {
     "lzma": "^2.3.2"
   }
