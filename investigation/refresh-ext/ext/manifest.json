@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "AolaSmartRefresh",
+  "version": "1.0.0",
+  "description": "No-relogin smart refresh for the Aola web client (F5 intercept + agent-driven reload)",
+  "content_scripts": [
+    {
+      "matches": ["http://aola.100bt.com/*", "https://aola.100bt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ]
+}

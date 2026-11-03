@@ -1,0 +1,25 @@
+<config>
+  <debug>false</debug>
+  <isWebLogin>true</isWebLogin>
+  <server>
+    <urls>
+      <commendServiceSite>//dispatch.aola.100bt.com/isp.txt</commendServiceSite>
+      <loginSite>//login-aola.100bt.com/</loginSite>
+      <serviceSite>//service-aola.100bt.com/</serviceSite>
+      <loginSiteBak>//login2.aola.100bt.com/</loginSiteBak>
+      <serviceSiteBak>//service2-aola.100bt.com/</serviceSiteBak>
+      <homePage>//aola.100bt.com/</homePage>
+      <btGameCenterUrl>//localstore.100bt.com</btGameCenterUrl>
+      <chatDomainUrl>//yxkf.100bt.com/user/enterUserRoom.do</chatDomainUrl>
+      <snapshotUrl>//up.aola.100bt.com/snapshot.jsp?</snapshotUrl>
+      <unionSnapshotUrl>//up.union.aola.100bt.com/snapshot.jsp?</unionSnapshotUrl>
+      <clientLogSite>//clientlog-aola.100bt.com/</clientLogSite>
+      <unionclientLogSite>//clientlog.union.aola.100bt.com/</unionclientLogSite>
+      <logErrorSiteUrl>http://183.61.254.215:8050/pushErrorMessage.action</logErrorSiteUrl>
+      <webLoginUrl>//account.100bt.com/game/auth/login.html</webLoginUrl>
+      <registerUrl>newRegister.jsp</registerUrl>
+    </urls>
+    <idleTime>7200</idleTime>
+  </server>
+  <zoneInfo countMax ="2000" indexMax ="2000" countMaxByIP ="15000"/>
+</config>

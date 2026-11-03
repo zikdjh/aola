@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Aola P0 - Ruffle</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #0b1220; color: #cfe3ff;
+               font: 13px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif; }
+  #stage    { width: 960px; height: 560px; margin: 8px auto; position: relative; }
+  #player   { width: 960px; height: 560px; }
+  #log      { margin: 4px auto; width: 944px; max-height: 180px; overflow-y: auto;
+              background: #101a2e; border: 1px solid #23304d; border-radius: 4px;
+              padding: 6px 10px; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="log"></div>
+<script>
+"use strict";
+// ==================== P0 网络重写层 ====================
+// 在 ruffle.js 之前安装：把 SWF 发起的官方域名请求全部改写到本地镜像
+// /mirror/<host>/<path>，使整个引导链保持同源（绕开 CORS/Flash 沙箱差异）。
+(function () {
+  var RX = /^(https?:)?\/\/([a-z0-9.-]+)(:\d+)?(\/.*)$/i;
+  function isMirrorHost(h) {
+    return /(^|\.)100bt\.com$/.test(h) || /(^|\.)a0bi\.com$/.test(h) || h === "183.61.254.215";
+  }
+  window.__NET_STATS = { rewritten: 0, passthrough: 0, urls: [] };
+  function rewrite(u) {
+    try {
+      if (typeof u !== "string") { return u; }
+      window.__NET_STATS.urls.push(u);
+      var m = u.match(RX);
+      if (m && isMirrorHost(m[2].toLowerCase())) {
+        window.__NET_STATS.rewritten++;
+        return location.origin + "/mirror/" + m[2].toLowerCase() + m[4];
+      }
+      if (u.charAt(0) === "/") { return u; }        // 已是本地绝对路径
+      window.__NET_STATS.passthrough++;
+      return u;                                     // 相对路径交给 SWF base 解析
+    } catch (e) { return u; }
+  }
+  // 捕获 Ruffle/AVM2 输出到面板（过滤刷屏，保留关键行）
+  (function () {
+  var orig = {};
+  var NOISE = /RUM|ArmsEventBridge|retessellated|naga|wgpu|symphonia|graphic\.rs/;
+  window.__SOCK_LINES = [];
+  ["log", "info", "warn", "error"].forEach(function (lv) {
+    orig[lv] = console[lv].bind(console);
+    console[lv] = function () {
+      var parts = Array.prototype.slice.call(arguments).map(function (x) {
+        try { return typeof x === "string" ? x : JSON.stringify(x); } catch (e) { return String(x); }
+      });
+      var line = parts.join(" ");
+      if (/ocket|onnect|ecurity|proxy/i.test(line)) {
+        window.__SOCK_LINES.push("[" + new Date().toTimeString().slice(0, 8) + "] " + lv + " " + line.slice(0, 300));
+        if (window.__SOCK_LINES.length > 300) { window.__SOCK_LINES.splice(0, 100); }
+      }
+      if (!NOISE.test(line)) { try { log(lv.toUpperCase() + " " + line); } catch (e2) {} }
+      orig[lv].apply(console, arguments);
+    };
+  });
+  })();
+  var origFetch = window.fetch;
+  if (origFetch) {
+    window.fetch = function (input, init) {
+      try {
+        var desc = typeof input === "string" ? input : (input && input.url);
+        var m = (init && init.method) || (input && input.method) || "GET";
+        window.__LOG_LINES.push("[net] FETCH " + m + " " + desc);
+        if (typeof input === "string") {
+          var r = rewrite(input);
+          if (r !== input) { return origFetch.call(window, r, init); }
+        } else if (input && input.url) {
+          var r2 = rewrite(input.url);
+          if (r2 !== input.url) {
+            var i = init ? Object.assign({}, init) : {};
+            if (!i.method)      i.method = input.method;
+            if (!i.headers && input.headers) i.headers = input.headers;
+            if (i.body === undefined && input.body) i.body = input.body;
+            if (!i.mode && input.mode)          i.mode = input.mode;
+            if (!i.credentials && input.credentials) i.credentials = input.credentials;
+            if (!i.cache && input.cache)        i.cache = input.cache;
+            if (!i.integrity && input.integrity) i.integrity = input.integrity;
+            if (typeof ReadableStream !== "undefined" && i.body instanceof ReadableStream) {
+              i.duplex = "half";
+            }
+            return origFetch.call(window, r2, i);
+          }
+        }
+      } catch (e) { try { log("fetch-patch ERR " + (e && e.stack || e)); } catch (e2) {} }
+      return origFetch.call(window, input, init);
+    };
+  }
+  // XHR 全量埋点
+  (function () {
+    var oo = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      try {
+        arguments[1] = rewrite(url);
+        this.__u = method + " " + arguments[1];
+        window.__LOG_LINES.push("[net] XHR.open " + this.__u);
+      } catch (e) {}
+      return oo.apply(this, arguments);
+    };
+    var os = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (b) {
+      try {
+        window.__LOG_LINES.push("[net] XHR.send " + (this.__u || "?") +
+          " body=" + (b ? (b.byteLength || b.size || String(b).length) : 0));
+      } catch (e) {}
+      return os.apply(this, arguments);
+    };
+  })();
+  var origOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    try { arguments[1] = rewrite(url); } catch (e) {}
+    return origOpen.apply(this, arguments);
+  };
+})();
+
+// ==================== ExternalInterface 宿主侧桩 ====================
+// 对应 play.html + aola.js 的 JS-AS 桥（P0 先以桩承接，Phase 1 完整实现）
+window.__EI_LOG = [];
+function __ei(name) {
+  return function () {
+    var a = Array.prototype.slice.call(arguments).map(String).join(",");
+    window.__EI_LOG.push(name + "(" + a + ")");
+    log("EI<- " + name + "(" + a + ")");
+    try {                                       // 即时上报（不等 6 秒轮询）
+      navigator.sendBeacon("/report",
+        JSON.stringify({ t: new Date().toISOString(), kind: "EI", name: name, args: a }));
+    } catch (e) {}
+    return "";   // aola.js 侧多数返回 undefined / 字符串
+  };
+}
+window.closeSocket      = __ei("closeSocket");
+window.openVoice        = __ei("openVoice");
+window.addCookieFromAs  = __ei("addCookieFromAs");
+window.showPayDialog    = __ei("showPayDialog");
+window.getUserAgent     = function () { return "Chrome"; };
+window.showmethememory  = __ei("showmethememory");
+
+// ---- 网页登录桥（对应 aola.js 真实契约） ----
+// getQS：解析当前页面 URL 参数（登录票据 u/code 由 loader 经此读取）
+function qsValue(key) {
+  // 注入值：loader 的自动登录页需要这批参数（真实客户端由门户/启动器 URL 提供）
+  function searchValue(searchKey) {
+    var search = window.location.search;
+    if (!search || search === "?") { return null; }
+    var kvItems = search.substring(1).split("&");
+    for (var i = 0; i < kvItems.length; i++) {
+      var kv = kvItems[i].split("=");
+      if (decodeURIComponent(kv[0]) === searchKey) {
+        return kv.length > 1 ? decodeURIComponent(kv[1]) : "";
+      }
+    }
+    return null;
+  }
+  var INJECT = {
+    duoduoId: "26394032",
+    username: "26394032",
+    location: "2",
+    // 默认走启动器流；?via=web 仅用于对照 web 清单，排查世界装配卡点。
+    via: searchValue("via")
+  };
+  if (INJECT[key] !== undefined) { return INJECT[key]; }
+  var search = window.location.search;
+  if (search === "" || search === "?") { return null; }
+  var kvItems = search.substring(1).split("&");
+  for (var i = 0; i < kvItems.length; i++) {
+    var kv = kvItems[i].split("=");
+    if (decodeURIComponent(kv[0]) === key) {
+      return kv.length > 1 ? decodeURIComponent(kv[1]) : "";
+    }
+  }
+  return null;
+}
+window.getQS = function (key) {
+  var v = qsValue(key);
+  log("EI<- getQS(" + key + ") => " + v);
+  try {
+    navigator.sendBeacon("/report", JSON.stringify(
+      { t: new Date().toISOString(), kind: "EI", name: "getQS", args: key + " => " + v }));
+  } catch (e) {}
+  return v;
+};
+window.jsGetValue = function (name) {
+  log("EI<- jsGetValue(" + name + ") => null");
+  return null;
+};
+window.getCookie = function (name) {
+  var m = document.cookie.match(new RegExp("(?:^|;\\s*)" + name + "=([^;]*)"));
+  var v = m ? m[1] : null;
+  log("EI<- getCookie(" + name + ") => " + (v ? v.slice(0, 20) + "…" : "null"));
+  return v;
+};
+window.getHref = function () { return window.location.href; };
+window.getWindowLocationHref = function () { return window.location.href; };
+
+// showWebLogin：loader 请求页面展示网页登录。渲染 iframe 承载官方登录页
+// （经 facade 注入补丁），登录成功后回跳带票据的 game 页面 → 通知顶层换票。
+window.showWebLogin = function (loginUrl) {
+  log("EI<- showWebLogin(" + String(loginUrl).slice(0, 120) + "…)");
+  try {
+    navigator.sendBeacon("/report", JSON.stringify(
+      { t: new Date().toISOString(), kind: "EI", name: "showWebLogin", args: String(loginUrl) }));
+  } catch (e) {}
+  var frame = document.createElement("iframe");
+  frame.id = "loginFrame";
+  frame.style.cssText = "position:absolute;left:0;top:0;width:960px;height:560px;" +
+                        "border:0;background:#fff;z-index:9;";
+  frame.src = String(loginUrl);
+  var stage = document.getElementById("stage");
+  stage.appendChild(frame);
+  log("登录页已在 iframe 中打开，请在窗口内完成登录");
+  document.title = "Aola P0 [LOGIN]";
+  return "";
+};
+
+// ==================== 日志面板 ====================
+var logBox = document.getElementById("log");
+window.__LOG_LINES = [];
+function log(msg) {
+  var t = new Date().toTimeString().slice(0, 8);
+  var line = "[" + t + "] " + msg;
+  window.__LOG_LINES.push(line);
+  if (window.__LOG_LINES.length > 800) { window.__LOG_LINES.splice(0, 200); }
+  // 仅关键级别写 DOM（debug/info 高频日志只进内存数组，避免拖垮页面）
+  if (/ERROR|WARN|EI<-|loading|resolved|FAILED|FATAL/.test(msg)) {
+    logBox.textContent += line + "\n";
+    if (logBox.textContent.length > 60000) {
+      logBox.textContent = "…(trimmed)…" + logBox.textContent.slice(-40000);
+    }
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+}
+
+// ==================== 登录票据交接 ====================
+// iframe 模式：登录后官方页把带票据的 game 地址装进本 iframe → 回传顶层换票
+if (window.top !== window) {
+  window.addEventListener("load", function () {
+    try {
+      if (/[?&](u|code)=/.test(window.location.search)) {
+        window.parent.postMessage({ type: "aolaTicket", url: window.location.href }, "*");
+        document.body.innerHTML =
+          "<p style='color:#cfe3ff;padding:20px;font:14px sans-serif'>登录成功，正在进入游戏…</p>";
+      }
+    } catch (e) {}
+  });
+} else {
+  window.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "aolaTicket" && e.data.url) {
+      log("收到登录票据，换票重载: " + String(e.data.url).slice(0, 120));
+      window.location.replace(e.data.url);
+    }
+  });
+}
+
+// ==================== 登录 Cookie 组合（WebLoginData 解析格式） ====================
+// user/login.swf 的 WebLoginChecker 把 game_auth_sid Cookie 按 "k=v,k=v" 解析成
+// WebLoginData（duoduoId/token/gameName/gameId/autoLogin）→ Common.token 就是
+// newLogin.jsp 的凭证。normallogin 返回的是裸 token，必须组合成 loader 期望的
+// 格式，否则解析为空对象 → newLogin 永不触发（此前白屏的最终根因）。
+(function composeAuthCookie() {
+  var m = document.cookie.match(/(?:^|;\s*)game_auth_sid=([^;]*)/);
+  if (!m || !m[1]) { log("无登录 Cookie —— 走 showWebLogin/验证码桥流程"); return; }
+  var raw = m[1];   // 浏览器原样值，不 decode（decode 会把 %E5 解回中文，造成重载循环）
+  // 服务器 Set-Cookie 下发的全量百分号编码形态（gameId%3D2%2C...）→ 解码一次为字面格式。
+  // SWF 的 WebLoginChecker 按字面逗号/等号切分，编码形态解析不出 token，
+  // 会把整串 Cookie 当 token 发 newLogin → <r><result>invalid</result></r>
+  if (/%3D/i.test(raw) && raw.indexOf(",") < 0) {
+    raw = decodeURIComponent(raw);
+    document.cookie = "game_auth_sid=" + raw + "; path=/";
+    log("game_auth_sid 服务器编码格式已解码为组合格式，重载生效");
+    setTimeout(function () { location.reload(); }, 300);
+    return;
+  }
+  if (/token=/.test(raw)) { log("game_auth_sid 已是组合格式，直接进入"); return; }
+  if (/[^\x20-\x7e]/.test(raw)) {
+    // Cookie 含非 ASCII（官方页写入的 gameName=奥拉星）——逗号+UTF-8 组合会让
+    // 上游 WAF 回 500。重写为纯 ASCII 版（gameName 百分号编码；loader 只用
+    // duoduoId/token，gameName 乱码无碍）。
+    var fixed = raw.replace(/gameName=[^,]*/, "gameName=%E5%A5%A5%E6%8B%89%E6%98%9F");
+    document.cookie = "game_auth_sid=" + fixed + "; path=/";
+    log("game_auth_sid 已 ASCII 化，重载生效");
+    setTimeout(function () { location.reload(); }, 300);
+    return;
+  }
+  if (/token=/.test(raw)) { log("game_auth_sid 已是组合格式，直接进入"); return; }
+  // 裸 token（normallogin Set-Cookie 原样）→ 组合为官方 WebLoginData 格式
+  // （实测官方格式：gameId=2,gameName=...,duoduoId=...,token=...,autoLogin=true）
+  var composed = "gameId=2,gameName=%E5%A5%A5%E6%8B%89%E6%98%9F,duoduoId=" +
+                 qsValue("duoduoId") + ",token=" + raw + ",autoLogin=true";
+  document.cookie = "game_auth_sid=" + composed + "; path=/";
+  log("game_auth_sid 已组合为 WebLoginData 格式，重载生效");
+  try { navigator.sendBeacon("/report", JSON.stringify(
+    { t: new Date().toISOString(), kind: "cookieCompose", duoduoId: qsValue("duoduoId") })); } catch (e) {}
+  setTimeout(function () { location.reload(); }, 300);
+})();
+
+// ==================== 登录验证码桥 ====================
+// SWF 的登录请求若命中腾讯 WAF 滑块，facade 会暂存挑战参数；这里轮询领取、
+// 在顶层窗口弹出滑块，通过后重放登录请求（Cookie 一致），成功即重载进游戏。
+(function captchaBridge() {
+  function completeCaptcha(cmd) {
+    var s = document.createElement("script");
+    s.src = "https://ssl.captcha.qq.com/TCaptcha.js";
+    s.onload = function () {
+      try {
+        var cap = new TencentCaptcha(cmd.appId, function (res) {
+          if (res.ret !== 0) { log("验证码未完成 ret=" + res.ret); return; }
+          log("滑块验证通过，回执 WAF 并重放登录…");
+          var content = [res.ret, res.ticket, res.randstr, cmd.seqid].join("\n");
+          fetch("/mirror/account.100bt.com/WafCaptcha", { method: "POST", body: content })
+            .then(function (r) { return r.text(); })
+            .then(function (t) {
+              log("WAF 回执: " + t.slice(0, 80));
+              return fetch("/mirror/account.100bt.com/game/auth/normallogin.action", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: cmd.payload
+              });
+            })
+            .then(function (r) { return r.text(); })
+            .then(function (t) {
+              if (/TencentCaptcha/.test(t)) {
+                log("服务器仍要求验证，请再点一次游戏内登录按钮");
+              } else {
+                log("登录成功！正在重载进入游戏…");
+                document.title = "Aola P0 [LOGIN OK]";
+                setTimeout(function () { location.reload(); }, 1500);
+              }
+            })
+            .catch(function (e) { log("验证码流程失败: " + e); });
+        });
+        cap.show();
+      } catch (e) { log("验证码弹窗失败: " + e); }
+    };
+    document.head.appendChild(s);
+  }
+  setInterval(function () {
+    fetch("/login-cmd")
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.cmd === "captcha") {
+          log("检测到登录滑块验证挑战 —— 请在弹窗中完成验证");
+          document.title = "Aola P0 [CAPTCHA]";
+          completeCaptcha(j);
+        } else if (j.cmd === "setCookies" && j.cookies && j.cookies.length) {
+          // 已完成的登录会话 Cookie 注入（loader 经 getCookie EI 读取）
+          j.cookies.forEach(function (c) {
+            try {
+              document.cookie = c.name + "=" + c.value + "; path=/";
+              log("注入登录 Cookie: " + c.name);
+            } catch (e) {}
+          });
+          document.title = "Aola P0 [LOGIN OK]";
+          log("登录态已注入，正在重载进入游戏…");
+          try {
+            navigator.sendBeacon("/report", JSON.stringify(
+              { t: new Date().toISOString(), kind: "cookieInject", count: j.cookies.length }));
+          } catch (e) {}
+          setTimeout(function () { location.reload(); }, 1200);
+        }
+      })
+      .catch(function () {});
+  }, 2000);
+})();
+
+// ==================== Ruffle 装载 ====================
+window.RufflePlayer = window.RufflePlayer || {};window.RufflePlayer.config = {
+  autoplay: "on",
+  unmuteOverlay: "hidden",
+  letterbox: "off",
+  logLevel: "debug",           // socket 生命周期诊断：SOCK_LINES 内存过滤，DOM 不刷
+  contextMenu: "on",
+  allowScriptAccess: true,     // 必须是布尔！字符串 "always" 经 wasm ToInt32 变 0=false，EI 被静默禁用
+  preferredRenderer: null,     // 默认 wgpu/webgl
+  // 中文字体回退：SWF 按「设备字体名」（宋体 / 微软雅黑 / 汉仪旗黑…）取字，Ruffle 只按
+  // 「字体家族名」在 fontSources 里匹配，而 Windows 字体家族名是英文 → 中文名匹配不到。
+  // 方案：client/web/fonts/*.ttf 是从系统字体改 name 表得到的副本（family = 中文设备字体名）。
+  // 注意：字体数量会拖慢 Ruffle（切精灵/魂卡编辑），这里只保留最小集，勿随意增加。
+  fontSources: [
+    "/fonts/songti.ttf", "/fonts/songti_b.ttf",
+    "/fonts/yahei.ttf", "/fonts/yahei_b.ttf", "/fonts/hanyi.ttf"
+  ],
+  defaultFonts: {
+    "宋体": "/fonts/songti.ttf",
+    "微软雅黑": "/fonts/yahei.ttf"
+  },
+  socketProxy: [
+    // <svr> 全量端点（newlogin_resp_real.xml 22.5KB 票据，44 个 host:port）
+    // 动态分配的 socket 全部经 facade 的 WS↔TCP 隧道透传
+    { host: "115.159.197.100", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8000" },
+    { host: "115.159.197.100", port: 8003, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8003" },
+    { host: "111.231.168.235", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/111.231.168.235/8000" },
+    { host: "118.89.165.43", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/118.89.165.43/8000" },
+    { host: "121.4.162.35", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/121.4.162.35/8000" },
+    { host: "111.231.168.235", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/111.231.168.235/8001" },
+    { host: "118.89.165.43", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/118.89.165.43/8001" },
+    { host: "121.4.162.35", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/121.4.162.35/8001" },
+    { host: "111.231.31.127", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/111.231.31.127/8001" },
+    { host: "118.89.168.165", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/118.89.168.165/8001" },
+    { host: "123.206.106.206", port: 8003, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8003" },
+    { host: "115.159.104.40", port: 8003, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8003" },
+    { host: "115.159.197.100", port: 8004, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8004" },
+    { host: "123.206.106.206", port: 8004, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8004" },
+    { host: "115.159.104.40", port: 8004, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8004" },
+    { host: "115.159.197.100", port: 8005, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8005" },
+    { host: "101.43.26.163", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/101.43.26.163/8001" },
+    { host: "150.158.99.62", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/150.158.99.62/8001" },
+    { host: "101.43.26.163", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/101.43.26.163/8000" },
+    { host: "150.158.99.62", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/150.158.99.62/8000" },
+    { host: "123.206.106.206", port: 8005, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8005" },
+    { host: "110.40.207.234", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/110.40.207.234/8001" },
+    { host: "110.40.207.234", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/110.40.207.234/8000" },
+    { host: "115.159.104.40", port: 8005, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8005" },
+    { host: "115.159.197.100", port: 8006, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8006" },
+    { host: "123.206.106.206", port: 8006, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8006" },
+    { host: "115.159.104.40", port: 8006, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8006" },
+    { host: "115.159.197.100", port: 8007, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8007" },
+    { host: "123.206.106.206", port: 8007, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8007" },
+    { host: "115.159.104.40", port: 8007, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8007" },
+    { host: "115.159.197.100", port: 8008, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8008" },
+    { host: "123.206.106.206", port: 8008, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8008" },
+    { host: "115.159.104.40", port: 8008, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8008" },
+    { host: "115.159.197.100", port: 8009, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8009" },
+    { host: "123.206.106.206", port: 8009, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8009" },
+    { host: "115.159.104.40", port: 8009, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8009" },
+    { host: "123.206.106.206", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8000" },
+    { host: "115.159.104.40", port: 8000, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8000" },
+    { host: "115.159.197.100", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8001" },
+    { host: "123.206.106.206", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8001" },
+    { host: "115.159.104.40", port: 8001, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8001" },
+    { host: "115.159.197.100", port: 8002, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.197.100/8002" },
+    { host: "123.206.106.206", port: 8002, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/123.206.106.206/8002" },
+    { host: "115.159.104.40", port: 8002, proxyUrl: "ws://127.0.0.1:8700/ws2tcp/115.159.104.40/8002" }
+  ]
+};
+
+window.addEventListener("load", function () {
+  // 状态上报器：每 6 秒把运行轨迹 POST 回服务器落盘（供外部读取分析）
+  setInterval(function () {
+    try {
+      var payload = JSON.stringify({
+        t: new Date().toISOString(),
+        vis: document.visibilityState,
+        title: document.title,
+        net: window.__NET_STATS,
+        ei: window.__EI_LOG,
+        log: (window.__LOG_LINES || []).slice(-200)
+      });
+      navigator.sendBeacon("/report", payload);
+    } catch (e) {}
+  }, 6000);
+  try {
+    var ruffle = window.RufflePlayer.newest();
+    var player = ruffle.createPlayer();
+    player.id = "player";
+    document.getElementById("stage").appendChild(player);
+    player.addEventListener("loadedmetadata", function () {
+      log("player loadedmetadata " + player.metadata
+        ? JSON.stringify(player.metadata).slice(0, 200) : "");
+    });
+    var url = "/mirror/aola.100bt.com/play/start~2107300001.swf";
+    log("loading " + url);
+    player.load({
+      url: url,
+      base: "/mirror/aola.100bt.com/play/"      // SWF 相对路径解析基准（关键）
+    }).then(function () {
+      log("player.load() resolved —— 引导链已启动");
+      document.title = "Aola P0 [RUNNING]";
+    }).catch(function (e) {
+      log("player.load() FAILED: " + (e && (e.stack || e.message) || e));
+      document.title = "Aola P0 [LOAD FAIL]";
+    });
+  } catch (e) {
+    log("FATAL: " + (e && (e.stack || e.message) || e));
+    document.title = "Aola P0 [FATAL]";
+  }
+});
+</script>
+<script src="/ruffle/ruffle.js"></script>
+</body>
+</html>

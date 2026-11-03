@@ -1,0 +1,316 @@
+﻿=== monitor started 2026-10-31 09:20:49 ===
+[2026-10-31 09:20:49] seq=1 waiting for launcher processes...
+[2026-10-31 09:20:54] seq=2 waiting for launcher processes...
+[2026-10-31 09:21:00] seq=3 waiting for launcher processes...
+[2026-10-31 09:21:05] seq=4 waiting for launcher processes...
+[2026-10-31 09:21:10] seq=5 waiting for launcher processes...
+[2026-10-31 09:21:15] seq=6 waiting for launcher processes...
+[2026-10-31 09:21:20] seq=7 waiting for launcher processes...
+[2026-10-31 09:21:25] seq=8 waiting for launcher processes...
+[2026-10-31 09:21:30] seq=9 waiting for launcher processes...
+[2026-10-31 09:21:50] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:21:50] NET PID 29220 -> 182.242.89.51:443 [Established]
+[2026-10-31 09:21:50] NET PID 6040 -> 212.64.118.86:443 [Established]
+[2026-10-31 09:21:50] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:21:50] NET PID 6040 -> 113.62.116.140:443 [Established]
+[2026-10-31 09:21:50] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:21:50] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:21:50] seq=13 snapshot: 8 procs, 6 connections
+[2026-10-31 09:22:25] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:22:25] NET PID 29220 -> 182.242.89.51:443 [Established]
+[2026-10-31 09:22:25] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:22:25] NET PID 6040 -> 113.62.116.140:443 [Established]
+[2026-10-31 09:22:25] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:22:25] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:22:25] seq=19 snapshot: 8 procs, 5 connections
+[2026-10-31 09:22:57] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:22:57] NET PID 29220 -> 182.242.89.51:443 [Established]
+[2026-10-31 09:22:57] NET PID 6040 -> 113.62.116.140:443 [Established]
+[2026-10-31 09:22:57] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:22:57] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:22:57] seq=25 snapshot: 8 procs, 4 connections
+[2026-10-31 09:23:29] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:23:29] NET PID 6040 -> 113.62.116.140:443 [Established]
+[2026-10-31 09:23:29] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:23:29] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:23:29] seq=31 snapshot: 8 procs, 3 connections
+[2026-10-31 09:24:00] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:24:00] NET PID 6040 -> 113.62.116.140:443 [Established]
+[2026-10-31 09:24:00] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:24:00] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:24:00] seq=37 snapshot: 8 procs, 3 connections
+[2026-10-31 09:24:32] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:24:32] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:24:32] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:24:32] seq=43 snapshot: 8 procs, 2 connections
+[2026-10-31 09:25:04] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:25:04] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:25:04] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:25:04] seq=49 snapshot: 8 procs, 2 connections
+[2026-10-31 09:25:37] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:25:37] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:25:37] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:25:37] seq=55 snapshot: 8 procs, 2 connections
+[2026-10-31 09:26:08] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:26:08] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:26:08] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:26:08] seq=61 snapshot: 8 procs, 2 connections
+[2026-10-31 09:26:40] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:26:40] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:26:40] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:26:40] seq=67 snapshot: 8 procs, 2 connections
+[2026-10-31 09:27:13] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:27:13] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:27:13] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:27:13] seq=73 snapshot: 8 procs, 2 connections
+[2026-10-31 09:27:45] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:27:45] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:27:45] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:27:45] seq=79 snapshot: 8 procs, 2 connections
+[2026-10-31 09:28:17] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:28:17] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:28:17] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:28:17] seq=85 snapshot: 8 procs, 2 connections
+[2026-10-31 09:28:49] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:28:49] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:28:49] NET PID 6040 -> 115.159.104.40:8009 [Established]
+[2026-10-31 09:28:49] seq=91 snapshot: 8 procs, 2 connections
+[2026-10-31 09:29:20] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:29:20] NET PID 6040 -> 115.159.104.40:843 [SynSent]
+[2026-10-31 09:29:20] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:29:20] NET PID 6040 -> 212.64.118.86:443 [Established]
+[2026-10-31 09:29:20] NET PID 6040 -> 212.64.118.86:443 [Established]
+[2026-10-31 09:29:20] NET PID 6040 -> 47.100.185.237:443 [Established]
+[2026-10-31 09:29:20] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:29:20] seq=97 snapshot: 8 procs, 6 connections
+[2026-10-31 09:29:52] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:29:52] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:29:52] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:29:52] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:29:52] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:29:52] seq=103 snapshot: 8 procs, 4 connections
+[2026-10-31 09:30:24] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:30:24] NET PID 6040 -> 212.64.118.86:443 [Established]
+[2026-10-31 09:30:24] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:30:24] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:30:24] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:30:24] seq=109 snapshot: 8 procs, 4 connections
+[2026-10-31 09:30:56] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:30:56] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:30:56] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:30:56] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:30:56] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:30:56] seq=115 snapshot: 8 procs, 4 connections
+[2026-10-31 09:31:28] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:31:28] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:31:28] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:31:28] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:31:28] seq=121 snapshot: 8 procs, 3 connections
+[2026-10-31 09:32:00] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:32:00] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:32:00] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:32:00] NET PID 6040 -> 119.86.222.51:443 [Established]
+[2026-10-31 09:32:00] seq=127 snapshot: 8 procs, 3 connections
+[2026-10-31 09:32:32] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:32:32] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:32:32] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:32:32] seq=133 snapshot: 8 procs, 2 connections
+[2026-10-31 09:33:04] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:33:04] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:33:04] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:33:04] seq=139 snapshot: 8 procs, 2 connections
+[2026-10-31 09:33:36] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:33:36] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:33:36] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:33:36] seq=145 snapshot: 8 procs, 2 connections
+[2026-10-31 09:34:08] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:34:08] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:34:08] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:34:08] seq=151 snapshot: 8 procs, 2 connections
+[2026-10-31 09:34:40] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:34:40] NET PID 6040 -> 212.64.118.86:443 [Established]
+[2026-10-31 09:34:40] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:34:40] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:34:40] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:34:40] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:34:40] seq=157 snapshot: 8 procs, 5 connections
+[2026-10-31 09:35:12] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:35:12] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:35:12] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:35:12] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:35:12] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:35:12] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:35:12] seq=163 snapshot: 8 procs, 5 connections
+[2026-10-31 09:35:45] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:35:45] NET PID 6040 -> 212.64.118.86:443 [CloseWait]
+[2026-10-31 09:35:45] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:35:45] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:35:45] seq=169 snapshot: 8 procs, 3 connections
+[2026-10-31 09:36:17] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:36:17] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:36:17] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:36:17] seq=175 snapshot: 8 procs, 2 connections
+[2026-10-31 09:36:49] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:36:49] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:36:49] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:36:49] seq=181 snapshot: 8 procs, 2 connections
+[2026-10-31 09:37:21] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:37:21] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:37:21] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:37:21] seq=187 snapshot: 8 procs, 2 connections
+[2026-10-31 09:37:53] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:37:53] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:37:53] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:37:53] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:37:53] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:37:53] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:37:53] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:37:53] seq=193 snapshot: 8 procs, 6 connections
+[2026-10-31 09:38:25] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:38:25] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:38:25] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:38:25] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:25] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:25] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:25] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:25] seq=199 snapshot: 8 procs, 6 connections
+[2026-10-31 09:38:57] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:38:57] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:38:57] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:38:57] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:57] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:57] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:57] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:38:57] seq=205 snapshot: 8 procs, 6 connections
+[2026-10-31 09:39:29] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:39:29] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:39:29] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:39:29] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:39:29] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:39:29] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:39:29] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:39:29] seq=211 snapshot: 8 procs, 6 connections
+[2026-10-31 09:40:01] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:40:01] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:40:01] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:40:01] NET PID 6040 -> 119.84.75.13:80 [CloseWait]
+[2026-10-31 09:40:01] NET PID 6040 -> 119.84.75.13:80 [CloseWait]
+[2026-10-31 09:40:01] NET PID 6040 -> 119.84.75.13:80 [CloseWait]
+[2026-10-31 09:40:01] NET PID 6040 -> 119.84.75.13:80 [CloseWait]
+[2026-10-31 09:40:01] seq=217 snapshot: 8 procs, 6 connections
+[2026-10-31 09:40:33] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:40:33] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:40:33] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:40:33] seq=223 snapshot: 8 procs, 2 connections
+[2026-10-31 09:41:05] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:41:05] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:41:05] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:41:05] seq=229 snapshot: 8 procs, 2 connections
+[2026-10-31 09:41:37] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:41:37] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:41:37] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:41:37] seq=235 snapshot: 8 procs, 2 connections
+[2026-10-31 09:42:09] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:42:09] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:42:09] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:42:09] seq=241 snapshot: 8 procs, 2 connections
+[2026-10-31 09:42:41] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:42:41] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:42:41] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:42:41] seq=247 snapshot: 8 procs, 2 connections
+[2026-10-31 09:43:13] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:43:13] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:43:13] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:43:13] seq=253 snapshot: 8 procs, 2 connections
+[2026-10-31 09:43:45] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:43:45] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:43:45] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:43:45] seq=259 snapshot: 8 procs, 2 connections
+[2026-10-31 09:44:17] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:44:17] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:44:17] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:44:17] seq=265 snapshot: 8 procs, 2 connections
+[2026-10-31 09:44:49] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:44:49] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:44:49] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:44:49] seq=271 snapshot: 8 procs, 2 connections
+[2026-10-31 09:45:21] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:45:21] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:45:21] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:45:21] seq=277 snapshot: 8 procs, 2 connections
+[2026-10-31 09:45:52] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:45:52] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:45:52] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:45:52] seq=283 snapshot: 8 procs, 2 connections
+[2026-10-31 09:46:25] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:46:25] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:46:25] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:46:25] seq=289 snapshot: 8 procs, 2 connections
+[2026-10-31 09:46:57] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:46:57] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:46:57] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:46:57] seq=295 snapshot: 8 procs, 2 connections
+[2026-10-31 09:47:29] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:47:29] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:47:29] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:47:29] seq=301 snapshot: 8 procs, 2 connections
+[2026-10-31 09:48:01] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:48:01] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:48:01] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:48:01] seq=307 snapshot: 8 procs, 2 connections
+[2026-10-31 09:48:32] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:48:32] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:48:32] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:48:32] seq=313 snapshot: 8 procs, 2 connections
+[2026-10-31 09:49:04] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:49:04] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:49:04] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:49:04] seq=319 snapshot: 8 procs, 2 connections
+[2026-10-31 09:49:36] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:49:36] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:49:36] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:49:36] seq=325 snapshot: 8 procs, 2 connections
+[2026-10-31 09:50:08] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:50:08] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:50:08] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:50:08] seq=331 snapshot: 8 procs, 2 connections
+[2026-10-31 09:50:39] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:50:39] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:50:39] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:50:39] seq=337 snapshot: 8 procs, 2 connections
+[2026-10-31 09:51:11] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:51:11] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:51:11] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:51:11] seq=343 snapshot: 8 procs, 2 connections
+[2026-10-31 09:51:42] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:51:42] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:51:42] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:51:42] seq=349 snapshot: 8 procs, 2 connections
+[2026-10-31 09:52:14] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:52:14] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:52:14] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:52:14] seq=355 snapshot: 8 procs, 2 connections
+[2026-10-31 09:52:46] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:52:46] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:52:46] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:52:46] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:52:46] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:52:46] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:52:46] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:52:46] seq=361 snapshot: 8 procs, 6 connections
+[2026-10-31 09:53:18] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:53:18] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:18] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:18] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:18] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:53:18] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:18] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:53:18] seq=367 snapshot: 8 procs, 6 connections
+[2026-10-31 09:53:49] PID 5312 role=child LOADED: pepflashplayer64.dll (modules total: 82)
+[2026-10-31 09:53:49] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:49] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:49] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:49] NET PID 6040 -> 119.84.75.13:443 [Established]
+[2026-10-31 09:53:49] NET PID 6040 -> 119.84.75.13:80 [Established]
+[2026-10-31 09:53:49] NET PID 6040 -> 115.159.104.40:8006 [Established]
+[2026-10-31 09:53:49] seq=373 snapshot: 8 procs, 6 connections

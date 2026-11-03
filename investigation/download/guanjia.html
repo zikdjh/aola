@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "//www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="//www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>百田游戏安全管家</title>
+<!--公共样式-->
+<link type="text/css" href="//www.100bt.com/resource/style/css.css" rel="stylesheet" />
+<link href="//www.100bt.com/resource/js/nav/commonNav.css" rel="stylesheet" type="text/css" />
+<link type="text/css" href="dist/style/css.css" rel="stylesheet" />
+<!--jQuery-->
+<script type="text/javascript" src="//www.100bt.com/resource/js/lib/jquery-mig-min.js"></script>
+<script type="text/javascript" src="//www.100bt.com/resource/js/nav/in-min.js"></script>
+<script type="text/javascript">
+var ST_startTime=new Date();
+var ST_DOMLoadedTime=ST_LoadTime=0;
+$(function(){
+	ST_DOMLoadedTime=new Date()-ST_startTime;
+});
+$(window).load(function(){
+	ST_LoadTime=new Date()-ST_startTime;
+	/*setDate*/
+	window.setUserModelValue&&setUserModelValue("ST_DOMLoadedTime",ST_DOMLoadedTime);
+	window.setUserModelValue&&setUserModelValue("ST_LoadTime",ST_LoadTime);
+	window.DC_SendUserModelData&&DC_SendUserModelData();
+});
+</script>
+<style>
+  html {
+    overflow: auto !important;
+  }
+</style>
+</head>
+<body>
+	<!--公用导航-->
+	<div id="baseNav"></div>
+    <iframe src="https://guanjia.100bt.com/" style="border: 0;margin: 0;padding: 0;width: 100%; height: calc(100vh - 42px)"></iframe>
+	<!--公用脚本-->
+	<script type="text/javascript" src="//www.100bt.com/resource/js/util/newcommon/util.js"></script>
+	<script type="text/javascript" src="//www.100bt.com/resource/js/util/newcommon/login.js"></script>
+	<script src="//www.100bt.com/resource/js/util/newcommon/common.js"></script>
+	<!--END 公用脚本-->
+	<script src="//www.100bt.com/resource/js/plugins/modulizer/dist/modulizer.js"></script>
+	<script type="text/javascript" src="dist/script/init.js?v=2"></script>
+	<!--平台的统计-->
+	<script tpye="text/javascript" src="//dc.100bt.com/js/dc.js"></script>
+	<!--百度统计-->
+	<script tpye="text/javascript" src="//www.100bt.com/resource/js/lib/bdStatistic.js"></script>
+	<!--[if lte IE 6]>
+	<script type="text/javascript">
+		In.add("DDPng", {
+			path:"//www.100bt.com/resource/zl/script/DD_belatedPNG.js",
+			type:"js"
+		});
+		$(function(){
+			In("DDPng", function(){
+				DD_belatedPNG.fix(".fixpng");
+			});
+		});
+	</script>
+	<![endif]-->
+</body>
+</html>

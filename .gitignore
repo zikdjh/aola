@@ -1,0 +1,14 @@
+# Aola 本地仓库忽略规则
+# 运行期缓存（资源镜像，可从官方源重建）
+client/cache/
+# 工作区截图 / 抓包 / 反汇编中间产物（体积大，保留在磁盘但不入库）
+client/docs/
+# 字体副本（由 client/tools/make_cjk_font.py 从系统字体生成）
+client/web/fonts/
+# 第三方依赖
+client/tools/node_modules/
+# 备份文件
+*.bak
+*.prefont
+*.old
+*.old923

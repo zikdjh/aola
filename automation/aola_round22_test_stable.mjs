@@ -1,0 +1,12 @@
+const task = await taskSpace("aola-ruffle-battle");
+const page = task.page("p1");
+await page.goto("http://127.0.0.1:8700/game");
+await page.waitForTimeout(20000);
+const t0 = Date.now();
+await page.mouse.click(822, 530, { label: "click enter" });
+await page.waitForTimeout(3000);
+await page.mouse.click(712, 521, { label: "click quickstart" });
+console.log("quickstart at", Date.now() - t0, "ms");
+await page.waitForTimeout(30000);
+const shot = await page.screenshot({ path: "D:/temp/ZCode/aola/client/docs/spike/stable_30s.png" });
+console.log("30s after quickstart:", shot);

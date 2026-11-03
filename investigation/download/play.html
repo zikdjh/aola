@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>奥拉星</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="bookmark" href="favicon.ico" />
+    <meta name="Keywords" content="奥拉,奥拉星,奥拉星游戏,奥拉飞船,奥拉星小游戏,奥拉星下载,奥拉星官方网站,儿童社区,儿童网站,冒险游戏,科幻游戏,9aola,aola" />
+    <meta name="Description" content="奥拉星（www.9aola.com）是广州百田公司为中国7-14岁的儿童设计的健康、益智、有趣的虚拟星球。在这个虚拟科幻的世界中，儿童们将成为奥拉星的小勇士，充分发挥自己的探索精神和正义感，前往神秘的外太空冒险、惩处奸恶。奥拉星包涵绿色环保、宠物养成、科学幻想、冒险探索、正邪对战等等，是一款普及科学知识，培养儿童正义向上、积极乐观的儿童互联网娱乐产品。" />
+    <style type="text/css">.ss {
+	CURSOR: hand; COLOR: #ff9933
+	}
+	   .vcbtnDiv{
+         position:absolute;
+         width:42px;
+         height:42px;
+         z-index:2;
+         left:918px;
+         top:0px;
+       }
+       .vcbtnA {
+       background-image: url(images/aola.png?20230209);
+       background-repeat: no-repeat;
+       background-position:-42px 0px;
+       display: block;
+       width: 42px;
+       height: 42px;
+       position:absolute;
+       top:0;
+       right:0;
+       }
+       .vcbtnA:hover {
+       background-position: 0px 0px;
+       }
+	</style>
+	<script src="js/aola.js?20230731" language="javascript" type="text/javascript"></script>
+    <script src="//pay.100bt.com/gamepay/common/paycommon.js?v=1.0" type="text/javascript"></script>
+    <script type = "text/javascript">
+	    var url = window.location.href;
+		if(url.indexOf(".mygame.com") != -1){
+		 document.domain = "mygame.com";
+		}else if(url.indexOf(".9aola.com") != -1){
+		 document.domain = "9aola.com";
+		}else{
+		 document.domain = "100bt.com";
+		}	//设置document.domain,用于iframe之间的通信，有用到其他iframe页面用于跨域同样需要设置document.domain为100bt.com
+        var payObject = payIframeObject; //默认为payIframeObject,若重命名对象需将新名字传入，showPayDialog(option)方法中（需确保对象名的唯一性）
+        payObject.addStyle(); //url为弹窗容器的样式，默认将加载的样式表"http://pay.100bt.com/gamepay/common/paycommon.css"，注意此样式表不包含充值页面的样式
+    </script>
+	<script language="javascript" type="text/javascript">
+      
+        // ========== 新增全屏方法：openFullWindow ==========
+        function openFullWindow(homePage) {
+		try {
+            // 获取SWF容器（对应页面中swfContainer div）
+            var container = document.getElementById('swfContainer');
+            if (!container) return;
+
+            // 浏览器全屏API兼容处理
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.mozRequestFullScreen) { // 火狐
+                container.mozRequestFullScreen();
+            } else if (container.webkitRequestFullscreen) { // 谷歌/ Safari
+                container.webkitRequestFullscreen();
+            } else if (container.msRequestFullscreen) { // IE/Edge
+                container.msRequestFullscreen();
+            }
+		} catch (e) {
+			console.error("开启全屏失败：", e);
+			}
+        }
+		
+		// 新增：关闭全屏方法 closeFullWindow
+		function closeFullWindow() {
+		try {
+		// 退出全屏 兼容各浏览器
+			if (document.exitFullscreen) {
+			document.exitFullscreen();
+			} else if (document.webkitExitFullscreen) {
+			document.webkitExitFullscreen();
+			} else if (document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+			} else if (document.msExitFullscreen) {
+			document.msExitFullscreen();
+			}
+			// 隐藏关闭按钮
+			var closeBtn = document.getElementById("close");
+			if (closeBtn) closeBtn.style.display = "none";
+		} catch (e) {
+			console.error("退出全屏失败：", e);
+			}
+		}
+		
+		
+	</script>
+</head>
+
+
+
+<body style="background-color: #FFFFFF; margin-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0">
+    <div id="swfContainer" class="largeCont" style="overflow: hidden;">
+        <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="//www.9aola.com/swflash.cab#version=10,1,85,3"
+            width="960" height="560" id="myFlash">
+			<param name="allowFullScreenInteractive" value="true" />
+			<param name="allowFullScreen" value="true"/>
+            <param name="movie" value="start~2107300001.swf" />
+            <param name="bgcolor" value="#FFFFFF" />
+            <param name="scale" value="noborder" />
+			<param name="allowScriptAccess" value="always" />
+			<!--[if !IE]>-->
+			<object type="application/x-shockwave-flash" data="start~2107300001.swf" width="960" height="560" allowFullScreen="true" allowFullScreenInteractive="true">
+				<param name="movie" value="start~2107300001.swf" />
+				<param name="quality" value="high" />
+				<param name="bgcolor" value="#ffffff" />
+				<param name="scale" value="noborder" />
+				<param name="allowFullScreen" value="true" />
+				<param name="allowFullScreenInteractive" value="true" />
+				<!--<![endif]-->
+				<!--script type="text/javascript">
+					var imgId = 1;
+					var version = "20200724";
+					document.write(
+						"<a href='http://www.adobe.com/go/getflash' onclick='onGetFlash()'><img src='images/get_flash_player" +
+						imgId + ".png?v=" +
+						version + "' alt='获得 Adobe Flash Player' /></a>");
+				</script -->
+				<div id="normalize-flash-launch-wrapper"></div>
+				<!--[if !IE]>-->
+			</object>
+			<!--<![endif]-->
+        </object>
+    </div>
+    <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="//download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,1,85,3"
+        width="0" height="0">
+        <param name="movie" value="version.txt" />
+    </object>
+	<script>//初始化
+		(function (para) {
+		  window._btdc = window._btdc || [];
+		  window[para.name] = {
+			track: function (eventType, data) {
+			  _btdc.push(["track", eventType, data]);
+			},
+			setGlobalParam: function (data) {
+			  _btdc.push(["setGlobalParam", data]);
+			}
+		  };
+		  var sdk_name = "_BTDC" + para.name;
+		  window["_baitianDC"] = sdk_name;
+		  window[sdk_name] = {
+			params: para
+		  };
+		})({
+		  name: "bt", // name 和旧的保持一致
+		  dataAppId: "2" // dataAppId 和旧的保持一致
+		});
+	</script>
+	<script src="//res-static.a0bi.com/snowball/packages/btdc/latest/btdc.global.js"></script>
+	<script src="//resource.a0bi.com/resource/js/lib/chrome80-issue-polyfill.js?v=20210106"></script>
+	<script src="//resource.a0bi.com/resource/js/lib/normalize-flash-launch.js?v=20210108"></script>
+	<script>
+		try{
+			var flash_ = bt.global.browserFlash == "" ? '0' : '1';
+			var id_cookie = getCookie("new_user_evt_aola_id");
+			var identityId_ = id_cookie == null ? "" : id_cookie;
+			var src_cookie = getCookie("new_user_aola_src");
+			var colA_ = (src_cookie == null || src_cookie == "") ? bt.global.referrer : src_cookie;
+			var time_cookie = getCookie("new_user_evt_aola_time");
+			var colC_ = time_cookie == null ? "" : time_cookie;
+			bt.track("common_event",{
+				identityId: identityId_,//用户id
+				eventId : '999',//事件id
+				colA : colA_,
+				colC : colC_,
+				dataAppId : '2',
+				flash : flash_
+			});
+		}catch(e){
+		}
+		function hasUsableFlash() {
+        var flashObj;
+        if (typeof window.ActiveXObject != "undefined") {
+            flashObj = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
+        } else {
+            flashObj = navigator.plugins['Shockwave Flash'];
+        }
+        return flashObj ? true : false;
+    }
+
+        //发送事件统计
+    function sendEventStatistics(params) {
+        // var id_cookie = getCookie("new_user_event_id");
+        // var identityId_ = id_cookie == null ? "" : id_cookie;
+        // params["identityId"] = identityId_;
+        // params["dataAppId"] = '2';
+        // bt.track("common_event", params);
+    }
+
+        //发送用户事件
+    function sendUserEvent(eventId, options) {
+        // var params = {};
+        // params["eventId"] = eventId;
+        // params["os"] = getOS();
+        // params["browserName"] = bt.global.browserName;
+        // params["browserUA"] = window.__$browserUA;
+        // options && options.btnName && (params["btnName"] = options.btnName);
+        // options && options.duoduoid && (params["duoduoid"] = options.duoduoid);
+        // params["origin"] = colA_;
+        // sendEventStatistics(params);
+    }
+
+
+    if (!hasUsableFlash()) {
+        // sendEventStatistics({
+        //     "eventId": "500891"
+        // });
+        // sendUserEvent(501072);
+        localStorage && localStorage.setItem('no_usable_flash', true);
+    }else if(localStorage && localStorage.getItem('no_usable_flash')){
+        // sendUserEvent(501073);
+        localStorage.removeItem('no_usable_flash');
+    }
+
+    function onGetFlash() {
+        // sendEventStatistics({
+        //     "eventId": "500890",
+        //     "pic_id": imgId
+        // });
+    }
+
+    if(bt.global.browserName == "chrome"){
+        // sendUserEvent(501074);
+    }
+    // sendUserEvent(501079);
+
+    var url = '';
+    try {
+        url = window.top.document.referrer;
+    } catch(e) {
+        if (window.parent) {
+            try {
+                url = window.parent.document.referrer;
+            } catch(e) {
+                url = '';
+            }
+        }
+    }
+    if(url === ''){
+        url = document.referrer || location.origin;
+    }
+
+    var isOfficial = url.indexOf('.100bt.com') != -1;
+	var search = window.location.search;
+	var fromH5 = search.indexOf('from_h5=true') != -1;
+    if(isOfficial){
+        // sendEventStatistics({"eventId":"501303", "action_name":"进入网页"});
+    }
+    if(isOfficial && !fromH5 && !hasUsableFlash()){
+        // sendEventStatistics({"eventId":"501303", "action_name":"跳转到H5"});
+        location.href = "http://aola.100bt.com/h5/" + search;
+    }
+	</script>
+</body>
+</html>

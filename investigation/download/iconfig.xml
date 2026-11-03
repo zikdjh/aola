@@ -1,0 +1,715 @@
+<?xml version="1.0" ?>
+<!-- res标签的根目录强制为\asset\baricons\ -->
+<!--
+  如下为icon标签下的例子
+  属性解释：
+  isMiddleXY默认是true,需要手动设置为false，
+  取消默认的水平锤子居中。用于需要手动调整hud位置的。
+  在hud添加到舞台后，你可以调整相对位置来实现hud的位置，而不用担心由于水平居中带来的实际大小变化再居中的影响）
+  isFromLetTop是表示这个hud从别的数据源中查找数据。而不是当前的配置。当前的配置只是一个key。这个是为了解决。lefTop上的带subhud的，如果leftTop上有了，就不需要再弄一份了。所以直接拷贝他的数据。（目前这个数据只有huiguiwanjia有效
+  如果想添加，修改：IconConfigReader.as
+  ）
+  <icon key="icon1" priority="1" row="1" debug="false" addFundus="true", isMiddleXY="false" isFromLetTop="true">
+    <res>activityicon5_18</res>
+    <clsName>mmo.baricons.Activity5_18Icon</clsName>
+    <condition>
+      <server>0</server>//0表示无条件要求，1表示旧服，2表示新服
+      <task id="150" auto="true"></task>//id=-1表示无条件
+      <event>showiconmustevent</event>        //showiconmustevent训练师等级小于6时,hud不显示 <event>showiconmustevent</event>默认是这个，不配的话会在训练师流程显示
+      <date start="05/26/2017 00:01" end="05/30/2017 23:57"/> //2017.5.26到2017.5.30出现，其他时间不会出现
+      <life value="21" type="GE"></life>//value表示星龄 type="G"表示星龄大于value才出现 type="L"表示星龄小于value才出现 E表示等于时也出现(可以和L和G组合 例如LE GE)
+      <battleEff>0</battleEff>,开放（可见）hud的战斗力限制，没有的话，可以不用设置，战斗力过滤优先级很低，taskId的过滤优先级最高
+      <newtaskid>0</newtaskid> //新手副本的解锁条件  与战力是或的关系  原task的字段弃用
+	  <notifyId>后端给的id。来自HudControlClient</notifyId>//某些奖励领取后就消失hud的可以用这个
+    </condition>
+	<labelFrame>图标要显示哪个标签。参照HudIconBase.FRAME_XX</labelFrame>工具：产品Excel和HUD排序2022.py如果有配置的话，则会自动注入，
+    <tips deltaX="45" deltaY="-5">创建测试例子</tips>
+  </icon>
+  注意：
+  1.mmo.baricons.Activity5_18Icon必须为显示对象或实现IInitService接口
+  2.condition标签下两个子标签只选其一，task优先至尊
+  3.deltaX和deltaY属性为tips偏移量，在IIconService未修改前没效
+  4.priority越小，图标就越靠近中间。同侧icon的priority不能相同
+-->
+<iconfigs>
+	<!--右边hud添加在lefttop里面-->
+	<lefttop serviceName="IconServiceLeftTop">
+		<icon key="nf2026icon" debug="false" addFundus="false" row="0">
+			<res>activity251226/nf2026icon</res>
+			<clsName>mmo.baricons.activity251226.NF2026Icon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">2026年费</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="usticon" debug="false" addFundus="false" row="0">
+			<res>activity240208/usticon</res>
+			<clsName>mmo.baricons.activity240208.USTIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>250000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">宇宙秘宝</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="gqscicon" debug="false" addFundus="false" row="0">
+			<res>activity240906/gqscicon</res>
+			<clsName>mmo.baricons.activity240906.GQSCIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>160000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">全新光启召唤法阵</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="tsaicon" debug="false" addFundus="false" row="0">
+			<res>activity250815/tsaicon</res>
+			<clsName>mmo.baricons.activity250815.TSAIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>80000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">最强奥拉</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="huddailytask" debug="false" addFundus="false" row="0">
+			<res>activity200612/huddailytask</res>
+			<clsName>mmo.baricons.activity200612.HudDailyTask</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>200000</battleEff>
+			</condition>
+			<tips deltaX="-25" deltaY="-55">每周剧情</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="lxp25icon" debug="false" addFundus="false" row="0">
+			<res>activity250516/lxp25icon</res>
+			<clsName>mmo.baricons.activity250516.LXP25Icon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">版本通行礼</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="mwcicon" debug="false" addFundus="false" row="0">
+			<res>activity250321/mwcicon</res>
+			<clsName>mmo.baricons.activity250321.MWCIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">版本福利中心</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="newactSumicon" debug="false" addFundus="false" row="0">
+			<res>activity200619/newactsumicon</res>
+			<clsName>mmo.baricons.activity200619.NewActSumIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">最新活动</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="newgodbossicon" debug="false" addFundus="false" row="0">
+			<res>activity180330/newgodbossicon</res>
+			<clsName>mmo.baricons.activity180330.NewGodBossIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<task id="150" auto="true"/>
+				<server>0</server>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="45" deltaY="-5">本周最新神宠大集结！</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="hudlatweekbuy" debug="false" addFundus="false" row="1">
+			<res>activity201204/hudopentotal</res>
+			<clsName>mmo.baricons.activity201204.hudopentotal.HudLastWeekCount</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">充消赠礼</tips>
+			<labelFrame>-1</labelFrame>
+			<subHud extendType="onIconLeft">
+				<icon key="akaxiyachargegifticon" debug="false" addFundus="false" row="1">
+					<res>activity261023/akaxiyachargegifticon</res>
+					<clsName>mmo.baricons.activity261023.AKaXiYaChargeGiftIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>0</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">阿卡西娅皮肤充消赠礼</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="nbcicon" debug="false" addFundus="false" row="1">
+					<res>activity261023/nbcicon</res>
+					<clsName>mmo.baricons.activity261023.NBCIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>0</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">宁布洛斯联名卡</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="abisiweddingskinicon" debug="false" addFundus="false" row="2">
+					<res>activity261002/abisiweddingskinicon</res>
+					<clsName>mmo.baricons.activity261002.ABiSiWeddingSkinIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">阿比斯花嫁巡礼</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="shujialanbaoicon" debug="false" addFundus="false" row="2">
+					<res>activity240628/shujialanbaoicon</res>
+					<clsName>mmo.baricons.activity240628.ShuJiaLanBaoIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>120000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">充值蓝宝享大礼</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+			</subHud>
+		</icon>
+		<icon key="sjzlicon" debug="false" addFundus="false" row="1">
+			<res>activity260904/sjzlicon</res>
+			<clsName>mmo.baricons.activity260904.SJZLIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>80000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">S2万龙赛季总览</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="ytbyicon" debug="false" addFundus="false" row="1">
+			<res>activity261030/ytbyicon</res>
+			<clsName>mmo.baricons.activity261030.YTBYIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>100000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">有糖必应，南瓜糖许愿</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="alaiyeshimengwishshopicon" debug="false" addFundus="false" row="1">
+			<res>activity261030/alaiyeshimengwishshopicon</res>
+			<clsName>mmo.baricons.activity261030.ALaiYeShiMengWishShopIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">阿赖耶识&梦许愿专场</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="alaiyeshidiancangpifuicon" debug="false" addFundus="false" row="1">
+			<res>activity261030/alaiyeshidiancangpifuicon</res>
+			<clsName>mmo.baricons.activity261030.ALaiYeShiDianCangPiFuIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>180000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">阿赖耶识万圣典藏皮肤</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="yystwicon" debug="false" addFundus="false" row="1">
+			<res>activity261009/yystwicon</res>
+			<clsName>mmo.baricons.activity261009.YYSTWIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>60000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">语愿圣庭福利中心-培育希望之种</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="bmthicon" debug="false" addFundus="false" row="2">
+			<res>activity201204/hudopentotal</res>
+			<clsName>mmo.baricons.activity201204.hudopentotal.HudMustBuy</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">必买特惠</tips>
+			<labelFrame>-1</labelFrame>
+			<subHud extendType="onIconLeft">
+				<icon key="hkgroupbuyicon" debug="false" addFundus="false" row="2">
+					<res>activity250430/hkgroupbuyicon</res>
+					<clsName>mmo.baricons.activity250430.HKGBIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">魂卡拼团</tips>
+					<labelFrame>1</labelFrame>
+				</icon>
+				<icon key="hkdirectpurchaseicon" debug="false" addFundus="false" row="3">
+					<res>activity230526/hkdirectpurchaseicon</res>
+					<clsName>mmo.baricons.activity230526.HKDirectPurchaseIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">限定魂卡特惠</tips>
+					<labelFrame>1</labelFrame>
+				</icon>
+				<icon key="akaxiyakuizengicon" debug="false" addFundus="false" row="1">
+					<res>activity261023/akaxiyakuizengicon</res>
+					<clsName>mmo.baricons.activity261023.AKaXiYaKuiZengIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>120000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">王的馈赠</tips>
+					<labelFrame>1</labelFrame>
+				</icon>
+				<icon key="shenwuyuediancangpifuicon" debug="false" addFundus="false" row="1">
+					<res>activity261023/shenwuyuediancangpifuicon</res>
+					<clsName>mmo.baricons.activity261023.ShenWuYueDianCangPiFuIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">勤勉天使神武月典藏皮肤</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="collecthaidilamashopicon" debug="false" addFundus="false" row="1">
+					<res>activity261009/collecthaidilamashopicon</res>
+					<clsName>mmo.baricons.activity261009.CollectHaiDiLaMaShopIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>0</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">羲和&银河许愿专场</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="abscsicon" debug="false" addFundus="false" row="3">
+					<res>activity260930/abscsicon</res>
+					<clsName>mmo.baricons.activity260930.ABSCSIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">阿比斯全形态专场</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+			</subHud>
+		</icon>
+		<icon key="nvshendasaijijinicon" debug="false" addFundus="false" row="2">
+			<res>activity250221/nvshendasaijijinicon</res>
+			<clsName>mmo.baricons.activity250221.NvShenDaSaiJiJinIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">豪华基金</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="hudmustgainwelfare" debug="false" addFundus="false" row="3">
+			<res>activity201204/hudopentotal</res>
+			<clsName>mmo.baricons.activity201204.hudopentotal.HudMustCount</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">必领福利</tips>
+			<labelFrame>-1</labelFrame>
+			<subHud extendType="onIconLeft">
+				<icon key="dszicon" debug="false" addFundus="false" row="1">
+					<res>activity260924/dszicon</res>
+					<clsName>mmo.baricons.activity260924.DSZIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>120000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">达斯特拟态秘境</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="gfsicon" debug="false" addFundus="false" row="1">
+					<res>activity251114/gfsicon</res>
+					<clsName>mmo.baricons.activity251114.GFSIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>150000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">舰队赛季</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="sgslticon" debug="false" addFundus="false" row="1">
+					<res>activity260508/sgslticon</res>
+					<clsName>mmo.baricons.activity260508.SGSLTIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>60000</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">曙光试炼塔</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="xinghuanshitujianicon" debug="false" addFundus="false" row="4">
+					<res>activity260109/xinghuanshitujianicon</res>
+					<clsName>mmo.baricons.activity260109.XingHuanShiTuJianIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>0</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">星环师图鉴</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+				<icon key="tbdzsicon" debug="false" addFundus="false" row="1">
+					<res>activity251205/tbdzsicon</res>
+					<clsName>mmo.baricons.activity251205.TBDZSIcon</clsName>
+					<condition>
+						<server>0</server>
+						<task id="150" auto="true"/>
+						<battleEff>0</battleEff>
+					</condition>
+					<tips deltaX="0" deltaY="-30">挖宝得专属钻装</tips>
+					<labelFrame>-1</labelFrame>
+				</icon>
+			</subHud>
+		</icon>
+		<icon key="lrxbicon" debug="false" addFundus="false" row="3">
+			<res>activity261030/lrxbicon</res>
+			<clsName>mmo.baricons.activity261030.LRXBIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">运来！夺宝全额返星币！</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="bbzrglicon" debug="false" addFundus="false" row="4">
+			<res>activity241227/bbzrglicon</res>
+			<clsName>mmo.baricons.activity241227.BBZRGLIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>100000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">必备阵容</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+	</lefttop>
+	<!--左边的浮动hud撤掉了，不要在这个里面加hud-->
+	<floatlefttop serviceName="IconServiceLeftTop">
+    </floatlefttop>
+	<righttop serviceName="IconServiceRightTop">
+		<icon key="hudnewbieinst" debug="false" addFundus="false" row="0" isMiddleXY="false">
+			<res>activity250530/hudnewbieinst</res>
+			<clsName>mmo.baricons.activity250530.HudNewbieInst</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>0</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">曙光之旅</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="hudaolaxunlianshi" debug="false" addFundus="false" row="0" isMiddleXY="false">
+			<res>activity240426/hudaolaxunlianshi</res>
+			<clsName>mmo.baricons.activity240426.HudAoLaXunLianShi</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>150000</battleEff>
+				<newtaskid>3</newtaskid>
+			</condition>
+			<tips deltaX="0" deltaY="-30">训练师</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="gcdicon" debug="false" addFundus="false" row="1">
+			<res>activity201231/gcdicon</res>
+			<clsName>mmo.baricons.activity201231.GCDIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>35000</battleEff>
+				<newtaskid>1</newtaskid>
+			</condition>
+			<tips deltaX="-60" deltaY="-5">礼包</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="qmflicon" debug="false" addFundus="false" row="1">
+			<res>activity250627/qmflicon</res>
+			<clsName>mmo.baricons.activity250627.QMFLIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>0</battleEff>
+			</condition>
+			<tips deltaX="45" deltaY="-5">新手福利全民开放</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="gobackgifticon2" debug="false" addFundus="false" row="1">
+			<res>newbase/gobackgifticon2</res>
+			<clsName>mmo.baricons.newbase.gobackgift2.GobackGiftIcon2</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+			</condition>
+			<tips deltaX="45" deltaY="-5">回归福利</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<!--
+		<icon key="newbiewelfareicon" debug="false" addFundus="false" row="1">
+			<res>newbase/newbiewelfare/newbiewelfareicon</res>
+			<clsName>mmo.baricons.newbase.newbiewelfare.NewbieWelfareIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>100000</battleEff>
+				<newtaskid>1</newtaskid>
+			</condition>
+			<tips deltaX="45" deltaY="-5">新手福利</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+    -->
+		<!--
+        <icon key="hudshouchong" debug="false" addFundus="false" row="0">
+          <res>activity190830/hudshouchong</res>
+          <clsName>mmo.baricons.activity190830.HudShouChong</clsName>
+          <condition>
+            <task id="150" auto="true" />
+            <server>0</server>
+            <event>showiconmustevent</event>
+            <event>shouchong</event>
+          </condition>
+          <tips deltaX="0" deltaY="-30">首充送！</tips>
+        </icon>
+        -->
+		<icon key="backtotopicon" debug="false" addFundus="false" row="0">
+			<res>activity190628/backtotopicon</res>
+			<clsName>mmo.baricons.activity190628.BackToTopIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+			</condition>
+			<tips deltaX="0" deltaY="-30">勇士回归 一跃巅峰</tips>
+		</icon>
+		<icon key="choupeticonblank" debug="false" addFundus="false" row="0">
+			<res>activity200403/choupeticonblank</res>
+			<clsName>mmo.baricons.activity200403.ChouPetIconBlank</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+			</condition>
+			<tips deltaX="0" deltaY="-30">训练师占位</tips>
+		</icon>
+		<!--
+        <icon key="hudgroupicon" debug="false" addFundus="false" row="2" isMiddleXY="false">
+          <res>activity201120/hudgroupicon</res>
+          <clsName>mmo.baricons.activity201120.HudGroupIcon</clsName>
+          <condition>
+            <server>0</server>
+            <task id="150" auto="true"></task>
+            <event>showiconmustevent</event>
+            <event>herokingswayiconappearevent</event>
+          </condition>
+          <tips deltaX="-35" deltaY="-5">成长</tips>
+        </icon>
+        -->
+		<!-- 亚比收集 
+		<icon key="hudyabiicon" debug="false" addFundus="false" row="1">
+			<res>activity201120/hudyabiicon</res>
+			<clsName>mmo.baricons.activity201120.HudYabiIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>30000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30"/>
+		</icon>-->
+		<!-- 亚比养成 -->
+		<icon key="hudpeiyangicon" debug="false" addFundus="false" row="2">
+			<res>activity201120/hudpeiyangicon</res>
+			<clsName>mmo.baricons.activity201120.HudPeiYangIcon</clsName>
+			<condition>
+				<!-- <event>showiconmustevent</event> -->
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>130000</battleEff>
+				<newtaskid>4</newtaskid>
+			</condition>
+			<tips deltaX="0" deltaY="-30"/>
+		</icon>
+		<!-- 亚比试炼 -->
+		<icon key="hudzhandouicon" debug="false" addFundus="false" row="3" isMiddleXY="false">
+			<res>activity201120/hudzhandouicon</res>
+			<clsName>mmo.baricons.activity201120.HudZhanDouIcon</clsName>
+			<condition>
+				<!-- <event>showiconmustevent</event> -->
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>220000</battleEff>
+				<newtaskid>6</newtaskid>
+			</condition>
+			<tips deltaX="0" deltaY="-30"/>
+		</icon>
+		<!-- 亚比竞技 -->
+		<icon key="ybdzicon" debug="false" addFundus="false" row="4">
+			<res>activity201120/hudjingjiicon</res>
+			<clsName>mmo.baricons.activity201120.HudJingJiIcon</clsName>
+			<condition>
+				<!-- <event>showiconmustevent</event> -->
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>250000</battleEff>
+				<newtaskid>9</newtaskid>
+			</condition>
+			<tips deltaX="0" deltaY="-30">星际竞技战区</tips>
+		</icon>
+		<!--测试入口 不要删-->
+		<icon key="debug0" debug="true" addFundus="false" row="5">
+			<res>debugicons/debug0</res>
+			<clsName>mmo.baricons.debugicons.DebugI0</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+			</condition>
+			<tips deltaX="45" deltaY="-5">测试入口</tips>
+		</icon>
+	</righttop>
+	<!--右边边的浮动hud撤掉了，不要在这个里面加hud-->
+	<floatrighttop serviceName="IconServiceRightTop">
+    </floatrighttop>
+	<huiguiwanjia serviceName="IconServiceHuiGuiWanJia">
+		<icon key="nf2026icon" debug="false" addFundus="false" row="0">
+			<res>activity251226/nf2026icon</res>
+			<clsName>mmo.baricons.activity251226.NF2026Icon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>0</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">2026年费</tips>
+			<labelFrame>2</labelFrame>
+		</icon>
+		<icon key="gqscicon" debug="false" addFundus="false" row="0">
+			<res>activity240906/gqscicon</res>
+			<clsName>mmo.baricons.activity240906.GQSCIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>160000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">全新光启召唤法阵</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="lxp25icon" debug="false" addFundus="false" row="0">
+			<res>activity250516/lxp25icon</res>
+			<clsName>mmo.baricons.activity250516.LXP25Icon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">流星之子版本通行礼</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="mwcicon" debug="false" addFundus="false" row="0">
+			<res>activity250321/mwcicon</res>
+			<clsName>mmo.baricons.activity250321.MWCIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">版本福利中心</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+		<icon key="newactSumicon" debug="false" addFundus="false" row="0">
+			<res>activity200619/newactsumicon</res>
+			<clsName>mmo.baricons.activity200619.NewActSumIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>120000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">最新活动</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="newgodbossicon" debug="false" addFundus="false" row="0">
+			<res>activity180330/newgodbossicon</res>
+			<clsName>mmo.baricons.activity180330.NewGodBossIcon</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<task id="150" auto="true"/>
+				<server>0</server>
+				<battleEff>150000</battleEff>
+			</condition>
+			<tips deltaX="45" deltaY="-5">本周最新神宠大集结！</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="hudmustgainwelfare" debug="false" addFundus="false" row="1" isFromLetTop="true">
+			<res>activity201204/hudopentotal</res>
+			<clsName>mmo.baricons.activity201204.hudopentotal.HudMustCount</clsName>
+			<condition>
+				<event>showiconmustevent</event>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>60000</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">必领福利</tips>
+			<labelFrame>-1</labelFrame>
+		</icon>
+		<icon key="bbzrglicon" debug="false" addFundus="false" row="2">
+			<res>activity241227/bbzrglicon</res>
+			<clsName>mmo.baricons.activity241227.BBZRGLIcon</clsName>
+			<condition>
+				<server>0</server>
+				<task id="150" auto="true"/>
+				<battleEff>0</battleEff>
+			</condition>
+			<tips deltaX="0" deltaY="-30">必备阵容</tips>
+			<labelFrame>19</labelFrame>
+		</icon>
+	</huiguiwanjia>
+	<floathuiguiwanjia serviceName="IconServiceHuiGuiWanJia">
+    </floathuiguiwanjia>
+</iconfigs>
