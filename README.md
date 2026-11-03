@@ -193,7 +193,8 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 - 原散落于仓库根目录的产物已合并到 `aola/`（client / docs / assets / patches / captures / automation / investigation）
 - 本地 git 仓库根 = `D:\temp\ZCode\aola`；`.gitignore` 排除可重建的大件：
   `client/cache/`（资源镜像）、`client/web/fonts/`（字体副本，用 `make_cjk_font.py` 生成）、
-  `client/docs/`（抓包/截图等工作产物，550MB）、`client/tools/node_modules/`
+  `client/web/ruffle-stable/`（旧版备用运行时）、`client/docs/`（抓包/截图等工作产物，550MB）、
+  `client/tools/node_modules/`
 - 需要完整可跑的副本时：恢复 `client/web/fonts/`（见 §3 生成命令）并预热 `client/cache/`（首次打开页面自动回源）
 
 原散落在仓库根目录的产物已整合进 `aola/`：
@@ -210,3 +211,18 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 | `zone_live.etl` / `zone_real.etl` / `loginmod_body.bin` | `aola/captures/` |
 
 所有文档与脚本内的绝对路径已同步替换；服务器验证：`/status`、`/game`、镜像资源均 200。
+
+---
+
+## 8. 许可
+
+本项目代码与文档采用 [MIT License](LICENSE)（Copyright (c) 2026 The Aola Ruffle Client Authors）。
+
+第三方组件与资源的许可另行遵循：
+
+- `client/web/ruffle/`：内置的 [Ruffle](https://ruffle.rs) 运行时（nightly，遵循 MIT / Apache-2.0）；
+  旧版备用运行时 `ruffle-stable/` 不入库，需要时从 Ruffle 官方 release 重新下载
+- `client/tools/node_modules/`：npm 依赖，遵循各包许可（如 `lzma` MIT）
+- 游戏客户端资源（`client/cache/` 及仓库外的官方 SWF/数据）版权归原权利人，**不在本仓库分发**
+- `client/web/fonts/`（由 `make_cjk_font.py` 从 Windows 系统字体生成）同样不入库，
+  使用/再分发前请核对系统字体自身的授权条款
