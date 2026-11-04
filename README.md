@@ -97,13 +97,14 @@ SWF 大量按**中文设备字体名**（宋体 / 微软雅黑 / 汉仪旗黑 �
 `汉仪旗黑-80S ExtraBold` 等无法等长映射。
 
 最终方案：**给需要的中文设备字体名各生成一份字体副本**（改 name 表 family，字形不动）。
-但 **字体数量会显著拖慢 Ruffle**（见下），当前只加载必要的最小集（5 个）：
+但 **字体数量会显著拖慢 Ruffle**（见下），当前只加载必要的最小集（6 个）：
 
-| 字体文件（`client/web/fonts/`，~79MB） | family | 来源 / 用途 |
+| 字体文件（`client/web/fonts/`，~94MB） | family | 来源 / 用途 |
 |---|---|---|
 | `songti.ttf` / `songti_b.ttf` | 宋体（Regular / Bold） | **simsun.ttc face0**；背包/通用文本（**精灵名字的关键**） |
 | `yahei.ttf` / `yahei_b.ttf` | 微软雅黑（Regular / Bold） | **msyh.ttc / msyhbd.ttc face0**；HUD |
 | `hanyi.ttf` | 汉仪旗黑-80S ExtraBold | simhei 副本；精灵卡/标签 |
+| `lingxin.ttf` | 汉仪菱心体简 | msyhbd.ttc face0 副本；背包预设阵容名等展示文本 |
 
 生成方式（改 name 表，保留全部字形；`.ttc` 可传 faceIndex）：
 
@@ -116,7 +117,7 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 
 1. `client/tools/serve.mjs` 的 `/fonts/*` 路由：优先 `client/web/fonts/`（本地副本，`cache-control: no-store`），
    回退 `C:\Windows\Fonts` 白名单（simhei/simsun/msyh/msyhbd/Deng）
-2. `client/web/game.html`：`fontSources` 只列上述 5 个文件（**只有 fontSources 生效**，
+2. `client/web/game.html`：`fontSources` 只列上述 6 个文件（**只有 fontSources 生效**，
    Ruffle 的 `defaultFonts` 对设备字体请求不起作用，保留仅为兼容旧配置）
 3. ~~`patch_fontname_simsun.mjs`（8 个 SWF 里「宋体」→`SimSun`，175 处）~~ 已**回退**
    （备份 `*.prefont` 仍在），改由 `songti.ttf` 直接提供「宋体」家族，因此不再需要加载 `simsun.ttc`
@@ -173,7 +174,7 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 - 首次打开背包 / 首次切到某只新精灵会有 0.8–2.2s 一次性停顿（Ruffle 解码 `petmovie` 位图，
   评估见 HANDOFF Round 31/32；重复切换已是 0.1–0.2s）
 - 少量 `Unknown device font "SimSun" / "Microsoft YaHei" / "微软雅黑"(bold)` 告警，未见可见缺字
-- 性能敏感点：**`fontSources` 字体数量**（14 个时切精灵阻塞 5–6s），当前只保留 5 个，勿随意增加
+- 性能敏感点：**`fontSources` 字体数量**（14 个时切精灵阻塞 5–6s），当前只保留 6 个，勿随意增加
 
 ---
 
