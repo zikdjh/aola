@@ -11,6 +11,9 @@ client/web/ruffle-stable/
 client/tools/node_modules/
 # 自动化轮次脚本（round126 起不再入库；历史脚本已在版本控制中保留）
 automation/aola_round*.mjs
+automation/aola_round*.py
+# 本地网关运行日志（serve 多种运行模式的 stdout/stderr）
+client/*.log
 # 自动化运行日志与临时辅助脚本
 automation/*.log
 automation/*.ps1
@@ -19,3 +22,11 @@ automation/*.ps1
 *.prefont
 *.old
 *.old923
+# Ruffle 版本二分运行时（round34；本地保留，不入库；需要时从官方 release 重新下载）
+client/web/ruffle-bisect/
+# 旧默认运行时备份（升级到 11-04 前的 10-31 版本）
+client/web/ruffle.old-10-31/
+# 整合包构建产物与逆向/临时数据（本地保留，不入库）
+/dist/
+/reverse/
+/temp/
