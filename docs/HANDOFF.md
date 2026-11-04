@@ -352,6 +352,241 @@ AOLA_DROP_SERVICE="HeadFrameService,ToteService,CrystalKeyService"
 
 
 
+## 🎞️ Round 33（2026-11-04）：试炼之地技能动画卡顿诊断
+
+**现象**：光启精灵在战斗中释放技能时，完整动画出现明显顿挫；1V1 已能复现，4V2 同屏精灵和
+特效增多后放大为接近 1 秒的主线程停顿。
+
+**复现路线**：世界地图 → 星战空间 → **试炼之地**；未使用竞技场。先测 1V1，再按用户要求测
+4V2。测试中通过道具「活力豆」补充技能次数，4V2 自动轮转稳定复现。
+
+**测量数据**（`requestAnimationFrame` 帧间隔）：
+
+| 场景 | 采样帧数 | p50 | p95 | 最大帧间隔 |
+|---|---:|---:|---:|---:|
+| 1V1 战斗静止 | 413 / 8s | 12.5ms | 54.3ms | 112.5ms |
+| 1V1 技能释放 | 123 / 约 9s | 75.0ms | 166.3ms | 820.7ms |
+| 4V2 战斗轮转 | 474 / 14.1s | 25.0ms | 41.8ms | 1262.3ms |
+| 4V2，DPR 1.0 | 337 / 10s | 24.9ms | 33.4ms | 953.9ms |
+
+**根因**：Ruffle WASM 主线程的时间线/显示列表处理，而不是首次资源下载或 GPU 像素填充。
+4V2 的 CPU profile 中：
+
+- `MovieClip::construct_frame` self 3247.1ms（24.5%）
+- `DisplayObject::run_frame_scripts` self 1767.1ms（13.3%）
+- `MovieClip::enter_frame` self 1721.3ms（13.0%）
+- AVM2 self 1028.3ms（7.7%）
+- MovieClip/DisplayObject 帧生命周期加 `Graphic::construct_frame` 合计约 **60.6%**
+- inclusive：`construct_frame` 33.9%、`enter_frame` 20.8%、`goto_frame` 20.3%
+
+DPR 从 1.5 降到 1.0 后，像素量约降 44%，p50 仍为 24.9ms，且仍有 0.8–0.95s 长任务，
+排除像素填充主导。资源调用记录中已出现 `effect10003800`、`effect10002500`、
+`effect50000000`、`effect10003000`、`petfightnew_gqresource`、`crieffect_normal_*`、
+`revertppmovie`、`reverthpmovie` 等，部分有重复调用记录；这些 SWF 已缓存/复用，
+结合长任务位置可排除首次网络回源主导。
+
+**技能分类边界**：用户指出光启技能分攻击、属性、特殊（灵契等）三类。本轮 4V2 已稳定覆盖
+攻击类动画并确认通用热点，但没有完成三类技能各自独立的 A/B 样本，不能归因到单一技能类别。
+现有 profile 表明，复杂嵌套 MovieClip、逐帧脚本和特效对象树才是差异来源。
+
+**后续建议**：先做 Ruffle 相邻版本二分；再按资源调用序列逐个替换技能 SWF，锁定对象树贡献；
+优化重点是减少嵌套 MovieClip、逐帧 `gotoAndPlay` 和无效帧脚本。短期若不能改运行时，可提供
+轻量特效选项；降低 DPR 收益有限。
+
+页面性能监控已停止（`monitorActive: false`），浏览器保留在 4V2 战斗现场。完整数据、截图和
+profile 见 [FINDINGS.md](../client/docs/spike/stutter-20261104/FINDINGS.md)。
+
+## 🔬 Round 34（2026-11-04 下午）：Ruffle 版本二分（6V1/4V2 稳态）——运行时升级 11-04
+
+按 Round 33 建议 #1 执行版本二分；应用户要求，对比场景改用 **6V1 与 4V2**（1V1 太轻，
+单窗口数据会造成假象，见"教训"）。
+
+### 二分环境（可复用）
+- `serve.mjs` 新增 `/ruffle-bisect/<version>/` 静态路由；`game.html` 支持 `?ruffle-bisect=<version>`
+  查询参数切换运行时（默认仍是 `/ruffle/`），一次部署多版本并存于 `client/web/ruffle-bisect/`
+- 已部署：`2026-10-24` / `2026-10-31` / `2026-11-04`（官方 selfhosted 包，gh release download）
+- 实测脚本：`automation/aola_round270~279_bisect_*.mjs`（goto/login/quickstart/nav/mode/steady/profile 聚合），
+  配置在 `automation/.bisect_current.json`（version + mode）；产物在
+  `client/docs/spike/stutter-20261104/bisect-20261104/<版本>/`
+
+### 方法要点（稳态协议）
+入场动画后先**自动战斗预热 75s** 再采样 8s 静止 + 14s 战斗（500µs CPU profile）。
+原因：6V1/4V2 的轮换会陆续实例化多只精灵的 petmovie，**首次解码是 0.5–3.3s 的一次性停顿**
+（10-24 6V1 入场窗口实测 max 3312ms），不预热会污染任何窗口、得出随机结论。
+
+### 结果（稳态战斗窗口，同一协议三版本）
+
+| 版本 | 6V1 p50 / max | 4V2 p50 / max | 6V1 construct_frame(14s 绝对) | 6V1 主线程 busy |
+|---|---|---|---|---|
+| 2026-10-24 | 20.9ms / 692ms | 37.4ms / 1192ms | 3363ms | 87% |
+| 2026-10-31（原默认） | 4.2ms / 429ms | 25.1ms / 796ms | 1998ms | 66% |
+| 2026-11-04 | **4.2ms / 237ms** | **20.8ms** / 1046ms | **1539ms** | **46%** |
+
+- 10-31 4V2 稳态 p50 25.1ms 与 Round 33 上午基线（25.0ms）吻合，协议可信。
+- profile 聚合：6V1 时间线族（construct+enter+scripts）占比 48.9% → 31.4% → 23.3%，
+  **新版把 6V1 的时间线开销砍半以上**；wgpu 占比 4.9% → 1.9%。
+- **4V2 三个版本都重**：construct_frame 绝对耗时 ~3.8–4.3s/14s，时间线族 55–63%，
+  秒级停顿（0.8–1.2s max）在最新版仍存在——它需要的是 Round 33 建议 #3
+  （时间线结构/特效对象树优化），换版本解决不了。
+
+### 教训
+1. **1V1 单窗口会制造反向假象**：首轮 1V1 对比（10-24 max 58ms vs 10-31 max 496ms）
+   曾暗示"新版回归"；6V1/4V2 稳态证明 10-24 才是最慢的。窗口太轻 + 战斗动态噪声
+   （PP、技能轮换、暴击时序）会让单次 14s 采样的 max 完全不可靠，结论要以
+   p50/p95 + profile 绝对耗时为准。
+2. **Chrome 窗口遮挡误判会冻结 RAF**（visibilityState=visible、hasFocus=true 却只有
+   1.5fps，主线程 profile 94% idle）：开关一次标签页（newPage+close）即可解除。
+   长时间运行的测量会话务必在每次采样前做一次 "shake"。
+3. 10-24 在导航中偶发 Ruffle 致命错误页（复现 1/2 次）；又一条不留恋旧版的理由。
+
+### 已执行变更
+- **默认运行时升级：`client/web/ruffle/` 10-31 → 11-04**（三场景实测无回归、6V1 显著受益；
+  旧版备份在 `client/web/ruffle.old-10-31/`，已 gitignore）。所有补丁在缓存 SWF 内、
+  字体走 fontSources，与 Ruffle 版本解耦，无需重打。
+- `serve.mjs` / `game.html` / `.gitignore` 的二分支持改动（见上）。
+- 未提交：以上改动 + Round 33 文档（README/HANDOFF）等，待用户确认后一并 commit。
+
+### 补充测量（同日晚间）：入场停顿在 11-04 上未复现
+- 全新页面（goto 重载）→ 直进 4V2 两次复测：**入场窗口零 ≥50ms 长任务**，长任务只出现在
+  战斗轮转段（[297,172,168,156,...]，与特效归因一致）。
+- 结合上午矩阵（10-24 入场 3312ms / 10-31 2321ms / 11-04 929ms），**升级 11-04 后入场停顿
+  已基本消失**；上午 11-04 的 929ms 入场停顿疑似与当时的限帧/节流状态耦合。
+- petmovie5158_0 结构侦察（`automation/aola_round284_pmovie_recon.py`）：13 张 fmt3 调色板位图
+  （409×274，压缩合计 555KB，索引数据仅 1.5MB）+ **DoABC + SymbolClass**（AS3 代码动态构建，
+  非时间线动画）——纯"解码"成本只有毫秒级，Round 32 的"解码 23MB"假设未获 profile 支持；
+  真实成本大概率在纹理上传/显示对象构建，且 11-04 已不明感知。
+- **降采样 PoC 暂缓**：前提机制未获证实，且今天环境（合成器限帧 + UI 坐标漂移）无法做
+  可信 A/B。待机器重启恢复基线后，若入场卡顿仍存在，用 `round282/283`（工具已备好）
+  先抓冷入场 profile 再决定。
+- 测量坑：本页 PerformanceObserver 的 resource 类型条目始终为空（原因未明），
+  资源↔停顿对齐需改用 serve.mjs 日志加时间戳的方案。
+
+### 下一步（更新 Round 35 优先级）
+1. ~~版本二分~~ ✅ 已完成并升级默认版本
+2. **4V2 特效 SWF A/B**（`effect100*.swf` / `effect50000000.swf` / `crieffect_normal_*.swf`
+   逐个替换禁用）——4V2 是唯一残留秒级停顿的场景，对象树归因价值最高
+3. 时间线结构优化（减少嵌套 MovieClip / 逐帧 gotoAndPlay）需改官方 SWF 资源，成本高，排后
+
+## 🎯 Round 35（2026-11-04 傍晚）：4V2 卡顿归因——特效对象树实锤，低配特效开关落地
+
+按 Round 34 计划执行建议 #2（特效 SWF A/B）。结论先行：**把战斗特效 SWF 替换为 760B 轻量壳后，
+4V2 主线程长任务总量 −76%（116 个/14.3s → 34 个/3.4s per 60s）——特效对象树就是主因**。
+
+### 工具（可复用，已入库）
+- **特效替换开关**：`serve.mjs` 新增 `AOLA_EFFECT_STUB` 环境变量，值为逗号分隔的 urlPath
+  子串（大小写不敏感），命中的 GET 改发替换体。替换体 = 缓存里最小的真实特效
+  `fightasyncres/effect/effect0.swf`（760B ZWS；加载/播放/完成生命周期与真特效一致），
+  缺失时退回程序生成的最小 FWS。默认不设置 = 关闭。
+  - 全部特效：`AOLA_EFFECT_STUB="fightasyncres/effect,crieffect_normal,revert"`
+  - 仅技能特效：`AOLA_EFFECT_STUB="fightasyncres/effect"`
+  - 这就是**低配特效模式**的落地形态（网关层，官方缓存不动、可随时回退）。
+- 归因脚本：`automation/aola_round277/278/281_bisect_*.mjs`（进模式 → 预热 → 60s 采样 + profile）；
+  配置 `automation/.bisect_current.json`；产物 `client/docs/spike/stutter-20261104/bisect-20261104/`。
+- **RAF 健康助手** `automation/aola_round280_raf_helper.mjs`：RAF 被节流时帧间隔数据全部作废
+  （长任务观察器不受影响）。逐级唤醒 = 保活音频（audible 标签页豁免）→ 窗口 TOPMOST →
+  开关标签页 → Win32 置前；失败可抛错中止测量。
+
+### 归因数据（4V2 稳态 60s 窗口，11-04 运行时，自动战斗）
+
+| 配置 | 长任务数 | 长任务累计 | timeline CPU |
+|---|---|---|---|
+| 无替换（基线） | 116 | 14.3s | 5.2s |
+| 仅技能特效族 `effect/` | 64 | 7.0s | 2.3s |
+| 全部特效（+暴击/回复动画） | 34 | **3.4s** | 3.7s |
+
+- 技能特效族（`effect1000xxxx`、`effect50000000` 等 20+ 个文件）≈ 一半长任务贡献；
+  暴击 `crieffect_normal_*` + 回复 `revertpp/hpmovie` ≈ 另一半。
+- 即：**特效对象树 ≈ 4V2 主线程卡顿的 3/4**，与 Round 33 profile 的
+  `construct_frame` 热点互相印证。剩余 ~3.4s 来自本体战斗时间线（宠物/场景 MovieClip）。
+
+### 测量方法与坑（重要）
+1. **帧间隔 vs 长任务是两套独立信号**。本次会话机器状态多次漂移：出现"合成器把游戏页
+   限到 ~21.7fps（主线程 78% idle）"、"页面级 1s 节流（跨浏览器重启持续、置顶/音频/开关
+   标签页只能部分缓解）"等状态，帧间隔数据随之作废；**PerformanceObserver 的长任务计数
+   与 CPU profile 时间不受影响，归因结论以长任务累计为准**。
+2. **空壳 SWF（0 帧）是坏替换体**：会让 AVM2 异常/重试开销放大（avm2 占比 5 倍），
+   必须用带完整生命周期的真实轻量 SWF（effect0.swf）。
+3. petmovie 首次解码停顿（0.5–3.3s）会污染采样窗口——进战斗后先自动轮转预热 60s 再测。
+
+### 下一步
+1. ~~低配模式验收~~ ✅ **功能验收通过**（2026-11-04 晚）：`AOLA_EFFECT_STUB` 全开下 4V2
+   完整运转——多敌同屏、自动轮转、PP、伤害累计 32130（第 4 回）、回合推进全部正常，
+   仅特效光效消失；截图 `bisect-20261104/default/4v2_02_after.png`。画质取舍留用户定夺
+2. 逐个特效精细归因（把 family 拆到单文件，找"最重的那一个"，可做定点优化）——可选
+3. 机器节流状态未根因（同浏览器空白页 242fps、游戏页 1fps 交替），下次会话若复现，
+   先跑 `aola_round280_raf_helper.mjs` 的健康检查再测量
+4. 未提交变更两轮累积（Round 34/35），待用户确认后 commit
+
+## 🩺 Round 36（2026-11-04 晚）：「入场加载首发精灵卡顿」两层根因
+
+用户报告进入战斗加载首发精灵时明显卡顿，4V2 尤甚。专项测量（round282/283，锚定点击
+4V2 → 战斗就绪的窗口，带时间戳的长任务/资源 + 全程 profile）结论分两层：
+
+### 层 1：petmovie 首次解码（游戏侧，上午已实锤）
+- 每只精灵首次实例化 = petmovie SWF（4 文件 ~2.1MB、12-13 张 409×274 调色板位图）
+  解压 + 23MB RGBA 解码 + ~52 次纹理上传 + 首次时间线构造，单只 0.8–3.5s（Round 31/32 实测）。
+- **4V2 开场同屏 6 只（我方 4 + 敌方 2）叠加，比 1V1（2 只）重 3 倍**——与"42 尤其明显"吻合。
+- 入场窗口实测（fresh session 首战）：10-24 max 3312ms、10-31 max 2321ms、11-04 max 929ms
+  （长任务 [926,266,219,215,...]）。升级 11-04 已把该项改善 2.5–3.5 倍。
+- 该停顿**每会话每精灵一次性**；预热的战斗入场零长任务。
+
+### 层 2：本机合成器限帧（环境侧，今天 13:00 起出现）
+- 今天下午起游戏页帧间隔恒定 ~46ms（≈21.7fps），主线程 72–88% 空闲、零长任务——
+  帧生产端（合成器/GPU 提交）被限制，游戏进程几乎无负载。
+- 排除：遮挡（置顶无效）、电源（AC 100%）、音频（无关）、GPU 驱动重置（系统日志无）、
+  游戏代码（空白页同浏览器 242fps；同一构建上午 60fps+）。
+- 跨浏览器重启持续；上午同一环境正常。**疑似 OS/浏览器全局状态（如 Chrome GPU 进程
+  降级），重启机器可验证。**
+- 影响：今天所有帧间隔类测量失真（p50 被 45.8ms 地板顶住）；长任务计数与 CPU profile
+  时间不受影响。今天用户感知的"入场卡顿"有相当部分是这个 21fps 幻灯片效应。
+
+### 优化建议
+1. 环境层：重启机器/浏览器恢复 60fps 基线（验证层 2 假设）
+2. 游戏层（petmovie，按 ROI）：
+   - **零成本立即可用**：进世界后开一次亚比背包把常用精灵翻一遍 = 手动预热 petmovie，
+     之后所有战斗入场零解码停顿
+   - **网关层降采样重封装 PoC**（Round 32 评估过，当时按"只影响首次看新精灵"否决；
+     4V2 入场 ×6 叠加使收益场景变大了）：50% 降采样 → 解码/上传 ~4× 降，入场停顿估计
+     0.8–3.5s → 0.2–0.9s；需同步修 PlaceObject 缩放矩阵，先做单只 PoC
+   - 上游路线：给 Ruffle 提 issue 建议磁盘级解码缓存（每次会话重复解码是纯浪费）
+
+### 测量工具备注
+- round282 的点击命中检测被 PerformanceObserver buffered 旧条目骗过（假阳性）——
+  判定"战斗已开始"要看 t≥0 的资源或截图，不要直接 some() 全量 resources。
+- 窗口位置在本会话中会漂移（疑似 TOPMOST 实验残留），即取即点的 rect 在长脚本中
+  也可能失效；点击前最好截图人工确认面板状态。
+
+## 📦 Round 37（2026-11-04 晚）：整合包（内嵌内核）+ 定制浏览器 CDP 控制 + 工作空间归位
+
+### 整合包（aola/dist/aola-launcher-pack/）
+- 结构：启动奥拉星.cmd + runtime/node（便携 Node 22）+ runtime/browser（内嵌 Chromium 157 便携内核，
+  816MB，locales 裁剪至 zh-CN/en-US）+ app（serve.mjs / web / 全量 cache 606MB，含全部补丁 SWF）
+- 启动器生命周期：起网关（窗口标题 AolaStar Gateway）→ 等 /status 就绪 → 开 Chromium --app 独立窗口
+  （隔离 profile 目录）→ **关窗自动 taskkill 网关**；端口占用分支：已有网关直接再开窗口
+- 启动器为 GBK+CRLF 编码（UTF-8 批处理在中文 Windows 下解析不稳）；UTF-8 源码保留在
+  launcher_new_utf8.cmd；输出文案避免全角括号（cmd 会拆行）
+- **沙箱坑**：Chromium trunk 快照在本机沙箱初始化 FATAL（SBOX_ALL_OK check failed，伴随
+  TEMP 不可写/注册表拒绝访问等 ACL 异常）→ 启动器统一 --no-sandbox（已实测内核正常渲染游戏），
+  说明.txt 标注取舍；恢复后可去掉该参数
+- **默认静音**：启动器两处均带 --mute-audio；想开声音删掉即可（说明.txt 第五节）
+- zip：AolaStarLauncher-20261104.zip（1.03GB，4872 项）；profile/ 与测试残留不入包
+
+### 定制浏览器 CDP 控制（automation/aola_round286_pack_browser_control.mjs）
+- 零依赖（Node 原生 WebSocket）：启动（加 --remote-debugging-port）→ /json/list 附身 →
+  Runtime.evaluate 读状态 → Page.captureScreenshot 截图 → Input.dispatchMouseEvent 模拟点击
+- 实测：登录页点击推进 [LOGIN]→[RUNNING]；截图存 client/docs/spike/pack-browser/
+- 注意：9222 仅显式加参数时开放，默认双击无暴露；spawn 用 detached:true 否则脚本退出会连坐浏览器
+- 意义：此前 ego-browser 的全部 round 自动化能力可平移到用户机整合包上（自动登录/引导/采样）
+
+### 工作空间归位
+- 根目录只留 aola/ 与 .workbuddy/：fws+analysis → aola/reverse/；perf-investigation-20261104 →
+  aola/client/docs/spike/；整合包 → aola/dist/；.bisect-dl → aola/temp/downloads/
+- .gitignore 增补 /dist/ /reverse/ /temp/（本地保留不入库）；README 目录树同步更新
+
+### 未提交变更（待用户确认）
+Round 33–37 全部成果：运行时升级、serve.mjs/game.html 改动、特效开关、bisect 工具、
+文档（README/HANDOFF/FINDINGS）、整合包脚本、round282–286 工具
+
 ## Symptom
 
 World loading stuck at `3% [2/61]` after clicking "Quick Start".

@@ -45,28 +45,37 @@ ego-browser nodejs -e "await import('file:///D:/temp/ZCode/aola/client/tools/rou
 ```
 aola/
 ├─ README.md                     ← 本文件（总入口）
-├─ docs/
+├─ LICENSE                       MIT 许可证
+├─ docs/                         ← 项目文档（入库）
 │  ├─ REPORT.md                  Flash 客户端架构调查报告（2026-10-31）
 │  ├─ PLAN.md                    现代内核客户端开发规划（Tauri/Ruffle 方案）
 │  ├─ p0-log.md                  P0 可行性冲刺执行日志（第 1–15 轮）
-│  ├─ HANDOFF.md                 世界装配 [2/61] 攻坚 + 战斗验证交接（Round 22–25）
+│  ├─ HANDOFF.md                 攻坚交接日志（Round 22–37：世界/战斗/背包/字体/性能/整合包）
 │  └─ screenshots/               关键里程碑截图
-├─ client/                       ← 客户端本体（原 ruffle-client）
-│  ├─ tools/serve.mjs            镜像/回源/网关改写/WS↔TCP 隧道/DS 加密补位（单文件，零依赖）
-│  ├─ tools/*.mjs                补丁与逆向工具（ABC 反汇编、SWF 补丁、票据自动化）
-│  ├─ web/game.html              Ruffle 宿主页（EI 桩、Cookie 组合、登录桥、socketProxy）
-│  ├─ web/ruffle/                Ruffle selfhosted 运行时
-│  ├─ cache/                     资源缓存（含已打补丁的 SWF，见 §3）
-│  └─ docs/spike/                运行时报告 report-*.txt 与过程截图 r*.png
+├─ client/                       ← 客户端本体
+│  ├─ tools/serve.mjs            本地网关：镜像/回源/网关改写/WS↔TCP 隧道/DS 加密补位（单文件零依赖）
+│  ├─ tools/*.mjs|py|ps1         补丁工具（SWF 字节补丁）、逆向工具（ABC 反汇编）、CDP/窗口辅助
+│  ├─ web/game.html              Ruffle 宿主页（EI 桩、Cookie 组合、登录桥、socketProxy、字体源）
+│  ├─ web/mirror-inject.js       页面级请求改写注入
+│  ├─ web/ruffle/                Ruffle selfhosted 运行时（当前 0.8.0-nightly.2026.11.4）
+│  ├─ web/ruffle-bisect/         版本二分副本（2026-10-24 / 10-31 / 11-04；本地不入库）
+│  ├─ web/ruffle.old-10-31/      升级前运行时备份（本地不入库）
+│  ├─ web/fonts/                 生成中文字体 6 件 99MB（不入库；make_cjk_font.py 可重建）
+│  ├─ cache/                     全量资源镜像 606MB（含全部已打补丁 SWF；不入库，删除即补丁失效）
+│  └─ docs/spike/                过程产物（432+ 截图、反汇编 .bin、stutter-20261104 归因数据；不入库）
 ├─ assets/                       官方入口页与引导 SWF 样本（play.html/aola.js/start.swf）
-├─ patches/
-│  ├─ socketserver/              socketserver / socketserver1 补丁前后 SWF
-│  ├─ bodies/                    反汇编用解压体（ss1/util/common/socketclient/kernel）
-│  └─ originals/                 被替换文件的原始备份与补丁产物
+├─ patches/                      socketserver 补丁前后 SWF / 反汇编 bodies / 原始备份
 ├─ captures/                     抓包与解压证据（zone_live.etl / zone_real.etl / loginmod_body.bin）
-├─ automation/                   ego-browser 自动化脚本（round21–round82，按轮次编号）
-└─ investigation/                早期调查产物（monitor / refresh-ext / download / scripts）
+├─ automation/                   自动化脚本 357 个（round21–286：登录/战斗/性能采样/整合包 CDP 驱动）
+├─ investigation/                早期调查产物 8.4MB（monitor / refresh-ext / download / scripts）
+├─ reverse/                      逆向数据 30MB（本地不入库）
+│  ├─ fws/                       游戏数据 SWF × 6（pf/pm/itf/mde/pcn/play）
+│  └─ analysis/                  ABC 反汇编分析 txt × 27
+├─ dist/                         分发构建产物 2.6GB（本地不入库）
+│  └─ aola-launcher-pack/        奥拉星整合包（zip 1.03GB + 解包目录：内嵌 Chromium 157 + 便携 Node 22 + 全量缓存）
+└─ temp/downloads/               二分/内核原始下载包 589MB（本地不入库，可随时删除）
 ```
+
 
 ---
 
@@ -173,6 +182,10 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 - 稀有 `71_24/71_25` Ruffle 脚本超时
 - 首次打开背包 / 首次切到某只新精灵会有 0.8–2.2s 一次性停顿（Ruffle 解码 `petmovie` 位图，
   评估见 HANDOFF Round 31/32；重复切换已是 0.1–0.2s）
+- 试炼之地战斗释放技能时有明显主线程卡顿：1V1 技能窗口 p50 约 75ms，4V2 最大帧间隔可达
+  1.26s；profile 中 Ruffle MovieClip/DisplayObject 帧生命周期约占 60.6%。
+  详见 [Round 33](docs/HANDOFF.md) 和
+  [战斗技能动画卡顿诊断](client/docs/spike/stutter-20261104/FINDINGS.md)
 - 少量 `Unknown device font "SimSun" / "Microsoft YaHei" / "微软雅黑"(bold)` 告警，未见可见缺字
 - 性能敏感点：**`fontSources` 字体数量**（14 个时切精灵阻塞 5–6s），当前只保留 6 个，勿随意增加
 
@@ -185,7 +198,7 @@ uv run --no-project --with fonttools -- python client\tools\make_cjk_font.py `
 | [docs/REPORT.md](docs/REPORT.md) | 官方客户端架构（引导链、协议、服务拓扑、安全策略） |
 | [docs/PLAN.md](docs/PLAN.md) | 现代内核客户端整体方案与分阶段计划 |
 | [docs/p0-log.md](docs/p0-log.md) | P0 执行日志：登录链破解、DefenseMsgSeq 逆向、票据协议 |
-| [docs/HANDOFF.md](docs/HANDOFF.md) | `[2/61]` 根因与修复、战斗验证、数据版本、背包/战力/字体/性能（Round 22–32） |
+| [docs/HANDOFF.md](docs/HANDOFF.md) | `[2/61]` 根因与修复、战斗验证、数据版本、背包/战力/字体/性能/整合包（Round 22–37） |
 
 ---
 
