@@ -8,7 +8,7 @@
 import http from "node:http";
 import crypto from "node:crypto";
 import net from "node:net";
-import { createReadStream, existsSync, statSync, mkdirSync, writeFileSync, appendFileSync, rmSync } from "node:fs";
+import { createReadStream, existsSync, statSync, mkdirSync, writeFileSync, appendFileSync, rmSync, readFileSync } from "node:fs";
 import { extname, resolve, sep, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -315,8 +315,42 @@ function transformText(buf, host, kind, options = {}) {
 
 const TEXT_TYPES = /xml|html|text\/plain|javascript/i;
 
+// ============ 特效 A/B 替换（round35：4V2 卡顿归因 / 低配特效模式） ============
+// AOLA_EFFECT_STUB="effect,crieffect_normal,revertppmovie" —— 逗号分隔的 urlPath
+// 子串（大小写不敏感），命中的 GET 资源改发最小空 SWF（特效不显示但加载链完整）。
+// 留空或未设置 = 关闭（原样回源）。例：
+//   全部特效   AOLA_EFFECT_STUB="fightasyncres/effect,crieffect_normal,revert"
+//   仅技能特效 AOLA_EFFECT_STUB="fightasyncres/effect"
+const EFFECT_STUB = (process.env.AOLA_EFFECT_STUB || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+// 替换体：优先用缓存里现成的最小真实特效 effect0.swf（760B ZWS，加载/播放/完成生命周期
+// 与真特效一致，避免空壳 SWF 破坏特效管理器的完成回调）；缺失时退回最小 FWS。
+const stubSwfBuf = (() => {
+  try {
+    const real = join(cacheDir, "aola.100bt.com", "play", "pet", "fightasyncres", "effect", "effect0.swf");
+    if (existsSync(real) && statSync(real).isFile()) return readFileSync(real);
+  } catch {}
+  // 最小合法 SWF：FWS v6 / 400x400 舞台 / 24fps / 0 帧 / 仅 End tag（Loader 可正常 load+addChild）
+  const bits = [];
+  const push = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
+  push(15, 5); push(0, 15); push(400, 15); push(0, 15); push(400, 15);   // RECT
+  while (bits.length % 8) bits.push(0);
+  const rect = Buffer.alloc(bits.length / 8);
+  bits.forEach((b, i) => { if (b) rect[i >> 3] |= (0x80 >> (i & 7)); });
+  const body = Buffer.concat([rect, Buffer.from([0, 24, 0, 0, 0, 0])]);  // 帧率24 + 帧数0 + End
+  const out = Buffer.alloc(8 + body.length);
+  out.write("FWS", 0); out.writeUInt8(6, 3); out.writeUInt32LE(out.length, 4);
+  body.copy(out, 8);
+  return out;
+})();
+
 async function mirror(host, urlPath, req) {
   const method = (req && req.method || "GET").toUpperCase();
+  // 特效替换：在缓存/回源之前拦截（归因测量要求每次请求都命中替换，与缓存状态无关）
+  if (method === "GET" && EFFECT_STUB.length && EFFECT_STUB.some(s => urlPath.toLowerCase().includes(s))) {
+    stats.mirrorHits++;
+    console.log(`[stub] ${host}${urlPath.split("?")[0]} -> stub swf`);
+    return { status: 200, body: stubSwfBuf, ct: "application/x-shockwave-flash" };
+  }
   const cacheHost = host.replace(/:/g, "_");   // Windows 目录名不允许冒号
   // 静态资源（GET）走磁盘缓存；POST（登录/业务接口）永远直连转发
   // captcha.action 的查询参数(?v=时间戳)是验证码刷新的唯一区分——缓存键剥查询参数
@@ -559,10 +593,20 @@ const server = http.createServer(async (req, res) => {
       createReadStream(fp).pipe(res);
       return;
     }
-    if (path.startsWith("/ruffle/") || path.startsWith("/ruffle-stable/")) {
-      const sub = path.startsWith("/ruffle-stable/") ? "ruffle-stable" : "ruffle";
-      const file = resolve(webDir, sub, path.slice(sub.length + 2));
-      if (!file.startsWith(resolve(webDir, sub) + sep) || !existsSync(file) || !statSync(file).isFile()) {
+    if (path.startsWith("/ruffle/") || path.startsWith("/ruffle-stable/") || path.startsWith("/ruffle-bisect/")) {
+      // /ruffle-bisect/<version>/<file>：Ruffle 版本二分用多套运行时（round34），如 /ruffle-bisect/2026-10-24/ruffle.js
+      let sub, rel;
+      if (path.startsWith("/ruffle-bisect/")) {
+        rel = path.slice("/ruffle-bisect/".length);            // "<version>/<file>"
+        const slash = rel.indexOf("/");
+        sub = slash > 0 ? "ruffle-bisect/" + rel.slice(0, slash) : null;
+        rel = sub ? rel.slice(slash + 1) : null;
+      } else {
+        sub = path.startsWith("/ruffle-stable/") ? "ruffle-stable" : "ruffle";
+        rel = path.slice(sub.length + 2);
+      }
+      const file = sub && rel ? resolve(webDir, sub, rel) : "";
+      if (!file.startsWith(resolve(webDir, sub ?? "") + sep) || !existsSync(file) || !statSync(file).isFile()) {
         res.writeHead(404); res.end("not found"); return;
       }
       res.writeHead(200, { "content-type": mime[extname(file).toLowerCase()] || "application/octet-stream", "cache-control": "no-store" });

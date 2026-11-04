@@ -483,6 +483,13 @@ window.addEventListener("load", function () {
   }
 });
 </script>
-<script src="/ruffle/ruffle.js"></script>
+<script>
+  // Ruffle 版本二分（round34）：URL 带 ?ruffle-bisect=<version> 时改用 /ruffle-bisect/<version>/ruffle.js
+  (function () {
+    var v = new URLSearchParams(location.search).get("ruffle-bisect");
+    var src = v ? "/ruffle-bisect/" + encodeURIComponent(v) + "/ruffle.js" : "/ruffle/ruffle.js";
+    document.write('<script src="' + src + '"><\/script>');
+  })();
+</script>
 </body>
 </html>
