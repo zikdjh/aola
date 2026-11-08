@@ -47,7 +47,10 @@ ego-browser nodejs -e "await import('file:///D:/temp/ZCode/aola/client/tools/rou
 整合包内双击 **`启动奥拉星.exe`** 即可，**没有任何命令行窗口**：
 
 - 网关（`app\tools\serve.mjs`）在后台隐藏运行，stdout/stderr 落 `logs\gateway-YYYYMMDD.log`
-- **网关生命周期 == 游戏浏览器生命周期**：关窗口 → 网关立刻退出 → 启动器退出；端口 8700 立即释放
+- **网关生命周期 == 游戏浏览器生命周期**：关窗口 → 网关立刻退出 → 启动器退出；临时端口随进程退出自动释放
+- **端口自动选择（Round 70f）**：网关以系统分配端口启动（首选 8700，被占用自动回避）——
+  与开发环境网关/其他程序可共存，实际端口见 `logs\gateway-*.log` 的「[launcher] 网关实际端口 xxxx」行；
+  页面 socket 隧道代理地址动态跟随该端口
 - **Job Object（KILL_ON_JOB_CLOSE）**：启动器被强杀/崩溃时网关被连带杀掉，绝不留孤儿进程占端口
 - 单实例：重复双击不会开第二套网关
 - 启动参数：`--force-device-scale-factor=1`（Round 64 的 DPR 钳制）、`--window-size=1300,860`
