@@ -54,3 +54,6 @@ client/web/ruffle.old-10-31/
 # 低配开关的运行时配置（页面按钮写入，属本机偏好，不入库）
 client/lowfx.json
 client/lowfx.extra
+
+# 一次性推送重试脚本（本地工具，不入库）
+push_retry_70f.cjs
