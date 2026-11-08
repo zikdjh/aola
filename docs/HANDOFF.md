@@ -2732,3 +2732,35 @@ materialdata 947244B 钉死版 / interfaces 最新+3 补丁·含版本化副本�
 - 启动器不再击杀占用 8700 的进程 —— 旧残留网关不再被接管，改用自动端口回避（更安全）。
 - `PreferredPort` 常量保留仅作文档；网关默认端口仍是 8700（serve.mjs argv 默认值）。
 - 运行时会话密钥短效：铸票后尽快进世界（Round 70e 已记录）。
+
+### Round 70g（2026-11-08）：网关版发行（与整合包分开发布）
+
+> 需求：只有网关程序的轻量版，启动后显示游戏地址并打开默认浏览器，与整合包分开发布。
+
+#### 组成（AolaGateway-0.1.0-beta1.zip，93.5MB）
+
+```
+AolaGateway\
+├─ 启动网关.cmd            双击入口（检查 node → start_gateway.mjs）
+├─ 重打票据.cmd            读取 gateway_port.txt 向实际端口注入新票据
+├─ start_gateway.mjs       包装器：以 0 端口起网关 → 解析横幅实际端口 → 打印游戏地址
+│                          → 写 gateway_port.txt → start 打开系统默认浏览器
+├─ round15_auto_login.mjs  票据重打脚本（支持端口参数）
+├─ lowfx.json              默认特效配置
+├─ tools\serve.mjs + gut_inline.mjs
+├─ web\  game.html / ruffle / fonts / mirror-inject / stub
+└─ cache\ 钉死补丁四件套（loader 字体版/login/socketserver×2）
+```
+
+- 依赖：系统 Node.js 18+ + 默认浏览器（不含运行时，与整合包 ~3.5GB 相对为 93.5MB）
+- 端口自动选择（Round 70f）在网关版同样生效；`gateway_port.txt` 供重打票据定位端口
+- 构建：`node client/tools/build_gateway_pack.mjs` → dist/aola-gateway/_stage/AolaGateway
+  → zip（staging 含基目录，与整合包 zip 结构一致）
+- ⚠️ 已知小坑：构建时若旧目录被默认浏览器进程持句柄会 EPERM —— 构建脚本改用独立
+  staging 目录规避；旧 AolaGateway 目录残留时手动删除即可
+
+#### 发布
+
+- Release v0.1.0-beta1 双资产：AolaStarLauncher-0.1.0-beta1.zip（整合包）+
+  **AolaGateway-0.1.0-beta1.zip**（网关版）
+- 说明.txt 含网关版/整合包对照表
