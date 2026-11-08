@@ -181,7 +181,11 @@ function setupWsTunnel(req, socket, head) {
 const root = fileURLToPath(new URL("..", import.meta.url));
 const webDir = join(root, "web");
 const cacheDir = join(root, "cache");
-const port = Number(process.argv[2] || 8700);
+// Round 70f：端口自动选择 —— argv[2] 支持 0 / "auto"（系统分配临时端口）；
+// 指定端口被占用（EADDRINUSE）时也自动回退到系统分配端口，实际端口以
+// listen 回调的 server.address().port 为准并打印（启动器从日志解析它）。
+const requestedPort = Number(process.argv[2] || 8700);
+let port = Number.isFinite(requestedPort) && requestedPort > 0 ? requestedPort : 0;
 mkdirSync(cacheDir, { recursive: true });
 
 const mime = {
@@ -327,7 +331,7 @@ const PATCH_PROTECTED = new Set([
 
 // 文本资产网关改写：官方域名引用 -> 绝对同源 facade（SWF 自己就会发出可代理的请求）。
 // 必须用绝对 URL：loader 内的 getDomain/域名比较逻辑对根相对路径会静默失败。
-const ORIGIN = `http://127.0.0.1:${port}`;
+let ORIGIN = `http://127.0.0.1:${port}`;   // listen 后更新为实际绑定端口
 function transformText(buf, host, kind, options = {}) {
   let s = buf.toString("utf8");
   const before = s;
@@ -1590,7 +1594,20 @@ function ensureEnginePatches() {
 }
 ensureEnginePatches();
 
+server.on("error", (e) => {
+  if (e && e.code === "EADDRINUSE" && port !== 0) {
+    console.log(`[serve] 端口 ${port} 被占用，自动改用系统分配端口…`);
+    port = 0;
+    try { server.listen(0, "127.0.0.1"); } catch (e2) { console.error("[serve] 监听失败:", e2.message); process.exit(1); }
+    return;
+  }
+  console.error("[serve] 监听失败:", e && e.message);
+  process.exit(1);
+});
+
 server.listen(port, "127.0.0.1", () => {
+  port = server.address().port;                 // 实际绑定端口（自动选择后与请求值不同）
+  ORIGIN = `http://127.0.0.1:${port}`;
   console.log(`[serve] P0 mirror on http://127.0.0.1:${port}/  game: /game`);
 });
 
