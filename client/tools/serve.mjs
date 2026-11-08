@@ -315,18 +315,23 @@ const FRESH_PATHS_RE =
 const CACHE_TTL_MS = Math.max(0, Number(process.env.AOLA_CACHE_TTL_HOURS ?? 6)) * 3600 * 1000;
 const revalidMemo = new Set();   // 本次网关生命周期内已 TTL 回源过的 relKey
 
-// Round 70e：**字节钉死名单**收敛为「上游不再更新 + 本地必须带补丁」的四个文件。
-// materialservice / interfaces / materialdata / petfightnew 全部**解除钉死**：
-// 官方最新组合（管家同款字节）本身自洽 —— Round 23-24 时代的 skip 补丁针对的是
-// 旧客户端/旧数据的错配，最新客户端 + 最新 materialdata 下账号数据全部有定义。
-// 且这些文件已随版本更新（materialdata/interfaces/petfightnew 都在本周 delta 里），
-// 旧钉死字节反而是错配源（ToteValueSeason #1065 / 旧战斗引擎）。
-// ⚠️ 前提：上游请求保留版本号（见 remotePath 注释），版本化 URL 才能拿到真当前版。
+// Round 70h：**兼容钉死名单**（裸 rel 路径）—— Round 70e 曾解除 materialdata/materialservice/
+// interfaces/petfightnew 的钉死并实测：官方最新组合下 **世界装配冻结在 2/60（ItemService）**——
+// 测试账号持有的遗留物品（68/5609/350）与新头像框（666）在最新数据/客户端组合里仍无定义，
+// ItemService.initItemData 等 throw → 永不 onInited。旧 skip 补丁对最新 materialservice
+// 指纹失配（文件已改 ZWS），无法平移 → **回退到已知良好的旧配套组合**（本周可玩内容完整，
+// 新精灵 6115/6116 是下周 11-13 的预告资源，不影响本周）：
+//   materialdata 947244B + materialservice 102933B(hk skip) + interfaces 1135089B(三防御补丁)
+// petfightnew 保持不钉（本周 delta 更新了引擎，跟随最新）；headframe throw 由
+// AOLA_DROP_SERVICE=HeadFrameService 摘除（启动器/网关版均注入）。
 const PATCH_PROTECTED = new Set([
   "play/loader.swf",                 // CJK 设备字体注入版（71016B ≠ 上游 69938B；上游数周未变）
   "play/user/login.swf",             // 登录模块补丁（上游未变）
   "play/library/socketserver.swf",   // patch_seq4（上游 5 月后未变，补丁是否仍必需未验证——保守保留）
   "play/library/socketserver1.swf",  // patch_seq4
+  "play/library/materialdata.swf",   // 兼容钉死 947244B（ItemService/HK 账号物品定义 + ToteValueSeason）
+  "play/material/materialservice.swf", // 兼容钉死 102933B（Item/HK/PetCard3 skip 补丁宿主）
+  "play/library/interfaces.swf",     // 兼容钉死 1135089B（equiptotalbe/petcard3_extra/hkhelp 三防御）
 ]);
 
 // 文本资产网关改写：官方域名引用 -> 绝对同源 facade（SWF 自己就会发出可代理的请求）。
