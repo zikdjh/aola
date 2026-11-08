@@ -2732,3 +2732,63 @@ materialdata 947244B 钉死版 / interfaces 最新+3 补丁·含版本化副本�
 - 启动器不再击杀占用 8700 的进程 —— 旧残留网关不再被接管，改用自动端口回避（更安全）。
 - `PreferredPort` 常量保留仅作文档；网关默认端口仍是 8700（serve.mjs argv 默认值）。
 - 运行时会话密钥短效：铸票后尽快进世界（Round 70e 已记录）。
+
+### Round 70g（2026-11-08）：网关版发行（与整合包分开发布）
+
+> 需求：只有网关程序的轻量版，启动后显示游戏地址并打开默认浏览器，与整合包分开发布。
+
+#### 组成（AolaGateway-0.1.0-beta1.zip，93.5MB）
+
+```
+AolaGateway\
+├─ 启动网关.cmd            双击入口（检查 node → start_gateway.mjs）
+├─ 重打票据.cmd            读取 gateway_port.txt 向实际端口注入新票据
+├─ start_gateway.mjs       包装器：以 0 端口起网关 → 解析横幅实际端口 → 打印游戏地址
+│                          → 写 gateway_port.txt → start 打开系统默认浏览器
+├─ round15_auto_login.mjs  票据重打脚本（支持端口参数）
+├─ lowfx.json              默认特效配置
+├─ tools\serve.mjs + gut_inline.mjs
+├─ web\  game.html / ruffle / fonts / mirror-inject / stub
+└─ cache\ 钉死补丁四件套（loader 字体版/login/socketserver×2）
+```
+
+- 依赖：系统 Node.js 18+ + 默认浏览器（不含运行时，与整合包 ~3.5GB 相对为 93.5MB）
+- 端口自动选择（Round 70f）在网关版同样生效；`gateway_port.txt` 供重打票据定位端口
+- 构建：`node client/tools/build_gateway_pack.mjs` → dist/aola-gateway/_stage/AolaGateway
+  → zip（staging 含基目录，与整合包 zip 结构一致）
+- ⚠️ 已知小坑：构建时若旧目录被默认浏览器进程持句柄会 EPERM —— 构建脚本改用独立
+  staging 目录规避；旧 AolaGateway 目录残留时手动删除即可
+
+#### 发布
+
+- Release v0.1.0-beta1 双资产：AolaStarLauncher-0.1.0-beta1.zip（整合包）+
+  **AolaGateway-0.1.0-beta1.zip**（网关版）
+- 说明.txt 含网关版/整合包对照表
+
+### Round 70g 补充（同日）：整合包 origin 稳定性 —— 动态端口的 Cookie 回归 + 票据工具入包
+
+> 用户实测整合包报「flash 不支持」= 包浏览器 Cookie 缺失（登录 iframe 路径）。
+
+#### 一、根因（两层）
+
+1. Round 70f 启动器传了 `"0"`（每次启动随机临时端口）→ **origin 每次都变** →
+   按 origin 存储的登录 Cookie 跨启动失效 → 回登录页。
+2. 包浏览器 profile 的旧 Cookie 本就是会话级（max-age 修复前的版本注入的），早已消失。
+
+#### 二、修复
+
+1. 启动器改回首**选端口 8700**（`PreferredPort`）—— 稳定 origin 下 Cookie 跨启动持久；
+   被占用时网关侧仍自动回退临时端口（此时需重打一次票据）。
+2. **票据工具入包**：`app\tools\round15_auto_login.mjs`（支持端口参数）+
+   包根「重打票据.cmd」（读 `app\gateway_port.txt` 定位实际端口，用内嵌 node 运行）；
+   启动器解析到实际端口后写 `app\gateway_port.txt`。
+
+#### 三、验证（实机）
+
+```
+启动器启动 → 端口文件=8700（稳定 origin）✓
+重打票据 → delivered setCookies → 页面自动注入并重载 ✓
+newLogin <c>ok</c> + loginkey ✓ → ZONE_CHOOSE_PAGE ✓ → 世界装配进行 ✓
+```
+后续启动（8700 未被占时）自动登录，无需重打；票据长效（服务端 90 天），
+间隔过长再走「重打票据.cmd」。
