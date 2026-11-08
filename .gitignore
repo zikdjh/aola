@@ -17,6 +17,11 @@ client/cache/aola.100bt.com/play/library/*
 !client/cache/aola.100bt.com/play/library/socketserver.swf.ct
 !client/cache/aola.100bt.com/play/library/socketserver1.swf
 !client/cache/aola.100bt.com/play/library/socketserver1.swf.ct
+!client/cache/aola.100bt.com/play/library/materialdata.swf
+!client/cache/aola.100bt.com/play/material
+client/cache/aola.100bt.com/play/material/*
+!client/cache/aola.100bt.com/play/material/materialservice.swf
+!client/cache/aola.100bt.com/play/library/interfaces.swf
 # 工作区截图 / 抓包 / 反汇编中间产物（体积大，保留在磁盘但不入库）
 client/docs/
 # 字体副本（由 client/tools/make_cjk_font.py 从系统字体生成）
