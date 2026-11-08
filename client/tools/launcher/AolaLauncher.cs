@@ -19,13 +19,15 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
 static class AolaLauncher
 {
-    const int Port = 8700;
+    const int PreferredPort = 8700;      // 首选端口（Round 70f：被占用时网关自动改用系统分配端口，实际端口从日志解析）
+    static int ActualPort = 0;           // 网关日志上报的实际绑定端口
     const string MutexPrefix = "AolaStarPackLauncher_";
 
     static string BaseDir;
@@ -136,6 +138,13 @@ static class AolaLauncher
         if (line == null) return;
         try
         {
+            // Round 70f：从网关横幅解析实际绑定端口（端口自动选择后与首选值可能不同）
+            var mp = Regex.Match(line, @"P0 mirror on http://127\.0\.0\.1:(\d+)/");
+            if (mp.Success)
+            {
+                ActualPort = int.Parse(mp.Groups[1].Value);
+                Log("[launcher] 网关实际端口 " + ActualPort);
+            }
             lock (LogLock)
             {
                 if (LauncherLog != null)
@@ -161,96 +170,10 @@ static class AolaLauncher
         catch { LauncherLog = null; }
     }
 
-    // ---------------- 端口 ----------------
-    static bool PortBusy()
-    {
-        TcpListener l = null;
-        try
-        {
-            l = new TcpListener(IPAddress.Loopback, Port);
-            l.Start();
-            return false;
-        }
-        catch { return true; }
-        finally { try { if (l != null) l.Stop(); } catch { } }
-    }
-
-    /// <summary>用 GetExtendedTcpTable 找监听 8700 的 pid（不依赖 netstat 解析、不受区域语言影响）。</summary>
-    [DllImport("iphlpapi.dll", SetLastError = true)]
-    static extern uint GetExtendedTcpTable(IntPtr pTcpTable, ref int pdwSize, bool bOrder, int ulAf, int tableClass, uint reserved);
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct MIB_TCPROW_OWNER_PID
-    {
-        public uint state;
-        public uint localAddr;
-        public uint localPort;
-        public uint remoteAddr;
-        public uint remotePort;
-        public uint owningPid;
-    }
-
-    static int FindListenerPid()
-    {
-        const int AF_INET = 2;
-        const int TCP_TABLE_OWNER_PID_LISTENER = 3;
-        int size = 0;
-        try
-        {
-            GetExtendedTcpTable(IntPtr.Zero, ref size, false, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0);
-            if (size <= 0) return 0;
-            IntPtr buf = Marshal.AllocHGlobal(size);
-            try
-            {
-                uint ret = GetExtendedTcpTable(buf, ref size, false, AF_INET, TCP_TABLE_OWNER_PID_LISTENER, 0);
-                if (ret != 0) return 0;
-                int count = Marshal.ReadInt32(buf);
-                IntPtr rowPtr = new IntPtr(buf.ToInt64() + 4);
-                int rowSize = Marshal.SizeOf(typeof(MIB_TCPROW_OWNER_PID));
-                for (int i = 0; i < count; i++)
-                {
-                    var row = (MIB_TCPROW_OWNER_PID)Marshal.PtrToStructure(new IntPtr(rowPtr.ToInt64() + i * rowSize), typeof(MIB_TCPROW_OWNER_PID));
-                    int port = ((int)(row.localPort & 0xFF) << 8) | (int)((row.localPort >> 8) & 0xFF);
-                    if (port == Port) return (int)row.owningPid;
-                }
-            }
-            finally { Marshal.FreeHGlobal(buf); }
-        }
-        catch { }
-        return 0;
-    }
-
-    static void KillStaleGateway()
-    {
-        if (!PortBusy()) return;
-        int pid = FindListenerPid();
-        Log("[launcher] 端口 " + Port + " 被占用，pid=" + pid + "，尝试接管并结束它");
-        if (pid > 0)
-        {
-            try
-            {
-                var p = Process.GetProcessById(pid);
-                if (string.Equals(p.ProcessName, "node", StringComparison.OrdinalIgnoreCase))
-                {
-                    p.Kill();
-                    p.WaitForExit(5000);
-                    Log("[launcher] 已结束旧网关 pid=" + pid);
-                }
-                else
-                {
-                    Log("[launcher] 占用者不是 node（" + p.ProcessName + "），不动它");
-                }
-            }
-            catch (Exception e) { Log("[launcher] 结束旧网关失败: " + e.Message); }
-        }
-        for (int i = 0; i < 25 && PortBusy(); i++) Thread.Sleep(200);
-    }
-
     // ---------------- 网关就绪 ----------------
     static bool WaitGatewayReady(int timeoutMs)
     {
         var sw = Stopwatch.StartNew();
-        string url = "http://127.0.0.1:" + Port + "/status";
         while (sw.ElapsedMilliseconds < timeoutMs)
         {
             if (Gateway != null)
@@ -258,9 +181,11 @@ static class AolaLauncher
                 try { if (Gateway.HasExited) { Log("[launcher] 网关进程已退出，退出码 " + Gateway.ExitCode); return false; } }
                 catch { }
             }
+            // Round 70f：端口自动选择 —— 先等日志横幅上报实际端口，再探活
+            if (ActualPort <= 0) { Thread.Sleep(250); continue; }
             try
             {
-                var req = (HttpWebRequest)WebRequest.Create(url);
+                var req = (HttpWebRequest)WebRequest.Create("http://127.0.0.1:" + ActualPort + "/status");
                 req.Timeout = 800;
                 req.ReadWriteTimeout = 800;
                 req.Proxy = null;
@@ -340,12 +265,10 @@ static class AolaLauncher
             if (!File.Exists(ChromeExe)) return Fail("缺少 runtime\\browser\\chrome.exe，请重新解压整合包。");
             if (!File.Exists(ServeJs)) return Fail("缺少 app\\tools\\serve.mjs，请重新解压整合包。");
 
-            // 旧网关（上次异常退出残留）先清掉，保证生命周期由本次启动器掌控
-            KillStaleGateway();
-            if (PortBusy()) return Fail("端口 " + Port + " 仍被其他程序占用，无法启动网关。\n请关闭占用该端口的程序后重试。");
-
-            // 启动网关（隐藏窗口）
-            var psi = new ProcessStartInfo(NodeExe, "\"" + ServeJs + "\" " + Port);
+            // Round 70f：端口自动选择 —— 网关以 "0"（系统分配）启动，被占用端口自动回避，
+            // 实际端口从网关日志横幅解析（GatewayLine）。不再抢占/击杀占用 8700 的进程，
+            // 与开发环境网关可共存。
+            var psi = new ProcessStartInfo(NodeExe, "\"" + ServeJs + "\" 0");
             psi.WorkingDirectory = BaseDir;
             psi.UseShellExecute = false;
             psi.CreateNoWindow = true;
@@ -395,7 +318,7 @@ static class AolaLauncher
                     // Round 68/69：画布像素固定 960×560（SWF 原生，与官方 Flash 运行时一致）。
                     // 显示倍率由页面右下角「页面大小」选择器控制（100%~200%，localStorage 持久化），
                     // 启动器不再强制 ?scale=1.3；首次启动默认 100%。
-                    "--app=http://127.0.0.1:" + Port + "/game?log=0" +
+                    "--app=http://127.0.0.1:" + ActualPort + "/game?log=0" +
                     " --user-data-dir=\"" + ProfileDir + "\"" +
                     " --no-first-run --no-default-browser-check" +
                     " --disable-features=CalculateNativeWindowOcclusion" +
@@ -475,8 +398,7 @@ static class AolaLauncher
         }
         catch (Exception e) { Log("[launcher] 结束网关异常: " + e.Message); }
         Gateway = null;
-        // 确认端口释放，避免下次启动遇到 EADDRINUSE
-        for (int i = 0; i < 25 && PortBusy(); i++) Thread.Sleep(200);
+        // Round 70f：临时端口随进程退出自动释放，无需等待端口回收
     }
 
     static int Fail(string msg)

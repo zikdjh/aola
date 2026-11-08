@@ -2699,3 +2699,36 @@ materialdata 947244B 钉死版 / interfaces 最新+3 补丁·含版本化副本�
 - socketserver 的 patch_seq4 是否仍必需未验证（上游 5 月后未变，保守保留钉死）
 - 若最新组合下账号数据再现「没有 N」类 throw：优先 AOLA_DROP_SERVICE 摘除对应服务，
   或对新版 materialservice（ZWS）重建指纹补丁（需 lzma，.lzmawork 有现成 npm 包）
+
+### Round 70f（2026-11-08）：端口自动选择 —— 网关/页面/启动器全链路去硬编码
+
+> 用户需求：端口自动选择可用端口。此前网关固定 8700（启动器硬编码 + game.html socketProxy
+> 44 条代理 URL 硬编码 + round15 重打脚本硬编码）。
+
+#### 一、改动
+
+1. **serve.mjs**：`argv[2]` 支持 `0`/`auto`（系统分配临时端口）；指定端口 EADDRINUSE 时
+   自动回退系统分配端口（server error 处理器重 listen）；实际端口以
+   `server.address().port` 为准打印横幅；`ORIGIN`（facade 改写基址）listen 后更新为实际端口。
+2. **game.html**：socketProxy 44 条代理 URL 改为**动态构建**
+   （`"ws://127.0.0.1:" + location.port + "/ws2tcp/…"`），页面在任何端口下 socket 隧道都正确。
+3. **启动器（AolaLauncher.cs）**：网关以 `"0"` 启动；`GatewayLine` 从日志横幅正则解析实际端口
+   （`ActualPort`）；就绪判定 = 端口已知后探活 `/status`；浏览器 `--app` 用实际端口。
+   **删除** KillStaleGateway/PortBusy/FindListenerPid/GetExtendedTcpTable 抢占逻辑 ——
+   不再击杀 8700 占用者，与开发环境网关可共存。
+4. **round15_auto_login.mjs**：第 2 参数指定网关端口（默认 8700）。
+
+#### 二、验证（实机）
+
+```
+实例1（指定 8700）      → 绑定 8700 ✓
+实例2（0=自动）         → 绑定 62357 ✓（共存）
+实例3（指定 8700 被占） → 日志「端口 8700 被占用，自动改用系统分配端口…」→ 绑定 62415 ✓
+三实例 /game 均 200；IAB 加载 62415 端口页面：socketProxy 44 条全部指向 :62415 ✓
+```
+
+#### 三、注意
+
+- 启动器不再击杀占用 8700 的进程 —— 旧残留网关不再被接管，改用自动端口回避（更安全）。
+- `PreferredPort` 常量保留仅作文档；网关默认端口仍是 8700（serve.mjs argv 默认值）。
+- 运行时会话密钥短效：铸票后尽快进世界（Round 70e 已记录）。

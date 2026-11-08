@@ -36,7 +36,9 @@ const jar = sc
   })
   .filter(c => /auth_sid|web_login_sid/.test(c.name));
 if (!jar.length) { console.log("!! no auth cookie — abort"); process.exit(1); }
-const imp = await fetch("http://127.0.0.1:8700/import-login", {
+// Round 70f：网关端口自动选择后，可用第 2 个参数指定目标端口（默认 8700 开发环境）
+const GWPORT = Number(process.argv[2] || 8700);
+const imp = await fetch("http://127.0.0.1:" + GWPORT + "/import-login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(jar),
