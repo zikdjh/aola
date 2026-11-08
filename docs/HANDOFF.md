@@ -2792,3 +2792,12 @@ newLogin <c>ok</c> + loginkey ✓ → ZONE_CHOOSE_PAGE ✓ → 世界装配进�
 ```
 后续启动（8700 未被占时）自动登录，无需重打；票据长效（服务端 90 天），
 间隔过长再走「重打票据.cmd」。
+
+### Round 70h 补充（同日）：发布状态 —— 兼容三件套入库 + 双资产定稿
+
+- master/develop 已同步：兼容三件套（materialdata 947244B / materialservice 102933B / interfaces
+  1135089B）随 gitignore 例外入库，fresh clone 直跑网关即得完整兼容状态
+- 网关版构建脚本同步加入三件套（62 文件 / 160.8MB），zip 重打
+- Release v0.1.0-beta1 双资产：AolaStarLauncher-0.1.0-beta1.zip + AolaGateway-0.1.0-beta1.zip
+  （期间 GitHub 仓库一度被自动风控禁用 + 发行资产被清，恢复后重传）
+- 一次性推送重试脚本已移出版本控制并忽略

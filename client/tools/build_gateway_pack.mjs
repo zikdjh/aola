@@ -39,6 +39,10 @@ cp(path.join(SRC_CACHE, "loader.swf"), path.join(OUT, "cache/aola.100bt.com/play
 cp(path.join(SRC_CACHE, "user/login.swf"), path.join(OUT, "cache/aola.100bt.com/play/user/login.swf"));
 cp(path.join(SRC_CACHE, "library/socketserver.swf"), path.join(OUT, "cache/aola.100bt.com/play/library/socketserver.swf"));
 cp(path.join(SRC_CACHE, "library/socketserver1.swf"), path.join(OUT, "cache/aola.100bt.com/play/library/socketserver1.swf"));
+// Round 70h：兼容三件套（账号遗留数据要求旧配套，见 serve.mjs PATCH_PROTECTED 注释）
+cp(path.join(SRC_CACHE, "library/materialdata.swf"), path.join(OUT, "cache/aola.100bt.com/play/library/materialdata.swf"));
+cp(path.join(SRC_CACHE, "material/materialservice.swf"), path.join(OUT, "cache/aola.100bt.com/play/material/materialservice.swf"));
+cp(path.join(SRC_CACHE, "library/interfaces.swf"), path.join(OUT, "cache/aola.100bt.com/play/library/interfaces.swf"));
 
 // 运行配置 + 启动包装器
 cp(path.join(ROOT, "client/lowfx.json"), path.join(OUT, "lowfx.json"));
