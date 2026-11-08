@@ -144,6 +144,9 @@ static class AolaLauncher
             {
                 ActualPort = int.Parse(mp.Groups[1].Value);
                 Log("[launcher] 网关实际端口 " + ActualPort);
+                // 写端口文件：重打票据.cmd / round15_auto_login 据此向实际端口注入登录票据
+                try { File.WriteAllText(Path.Combine(BaseDir, "app", "gateway_port.txt"), ActualPort.ToString()); }
+                catch (Exception e2) { Log("[launcher] 写 gateway_port.txt 失败: " + e2.Message); }
             }
             lock (LogLock)
             {
@@ -265,10 +268,10 @@ static class AolaLauncher
             if (!File.Exists(ChromeExe)) return Fail("缺少 runtime\\browser\\chrome.exe，请重新解压整合包。");
             if (!File.Exists(ServeJs)) return Fail("缺少 app\\tools\\serve.mjs，请重新解压整合包。");
 
-            // Round 70f：端口自动选择 —— 网关以 "0"（系统分配）启动，被占用端口自动回避，
-            // 实际端口从网关日志横幅解析（GatewayLine）。不再抢占/击杀占用 8700 的进程，
-            // 与开发环境网关可共存。
-            var psi = new ProcessStartInfo(NodeExe, "\"" + ServeJs + "\" 0");
+            // Round 70f/70g：端口策略 —— 首选 8700（稳定 origin，登录 Cookie 跨启动持久）；
+            // 被占用时网关侧自动回退系统分配端口（此时 origin 变化，需重打一次票据）。
+            // 实际端口从网关日志横幅解析（GatewayLine → ActualPort → app\gateway_port.txt）。
+            var psi = new ProcessStartInfo(NodeExe, "\"" + ServeJs + "\" " + PreferredPort);
             psi.WorkingDirectory = BaseDir;
             psi.UseShellExecute = false;
             psi.CreateNoWindow = true;
