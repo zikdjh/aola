@@ -245,7 +245,17 @@ function dumpABC(d, ti) {
       if (!arr.some(a => a.includes(ARG))) continue;
       const b = bodies.get(mi);
       console.log("\n===== m" + mi + " " + arr.join(" | ") + (b ? "  (locals " + b.locals + ")" : "  (NO BODY)") + " =====");
+      // round47：给出 code 的十六进制前缀与总长，便于在 ABC 里定位并原地打补丁
+      if (b) console.log("  codeLen=" + b.code.length + " hex=" + b.code.subarray(0, 32).toString("hex"));
       if (b) disasm(b);
+    }
+  } else if (MODE === "hex") {
+    // round47：给字节补丁工具用 —— 输出 "HEX <methodIdx> <codeLen> <前32字节hex>"
+    for (const [mi, arr] of methodOwners.entries()) {
+      if (!arr.some(a => a.includes(ARG))) continue;
+      const b = bodies.get(mi);
+      if (!b) continue;
+      console.log("HEX " + mi + " " + b.code.length + " " + b.code.subarray(0, 32).toString("hex") + "  " + arr[0]);
     }
   } else if (MODE === "refs") {
     for (const [mi, arr] of methodOwners.entries()) {
@@ -354,3 +364,4 @@ function dumpABC(d, ti) {
     }
   }
 }
+

@@ -1,6 +1,22 @@
 # Aola 本地仓库忽略规则
 # 运行期缓存（资源镜像，可从官方源重建）
-client/cache/
+client/cache/*
+# 例外：钉死补丁缓存四件套（fresh clone 直跑网关必需；完整缓存仍不入库）
+!client/cache/aola.100bt.com
+client/cache/aola.100bt.com/*
+!client/cache/aola.100bt.com/play
+client/cache/aola.100bt.com/play/*
+!client/cache/aola.100bt.com/play/loader.swf
+!client/cache/aola.100bt.com/play/loader.swf.ct
+!client/cache/aola.100bt.com/play/user
+client/cache/aola.100bt.com/play/user/*
+!client/cache/aola.100bt.com/play/user/login.swf
+!client/cache/aola.100bt.com/play/library
+client/cache/aola.100bt.com/play/library/*
+!client/cache/aola.100bt.com/play/library/socketserver.swf
+!client/cache/aola.100bt.com/play/library/socketserver.swf.ct
+!client/cache/aola.100bt.com/play/library/socketserver1.swf
+!client/cache/aola.100bt.com/play/library/socketserver1.swf.ct
 # 工作区截图 / 抓包 / 反汇编中间产物（体积大，保留在磁盘但不入库）
 client/docs/
 # 字体副本（由 client/tools/make_cjk_font.py 从系统字体生成）
@@ -30,3 +46,6 @@ client/web/ruffle.old-10-31/
 /dist/
 /reverse/
 /temp/
+# 低配开关的运行时配置（页面按钮写入，属本机偏好，不入库）
+client/lowfx.json
+client/lowfx.extra
