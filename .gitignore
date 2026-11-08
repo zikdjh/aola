@@ -1,6 +1,22 @@
 # Aola 本地仓库忽略规则
 # 运行期缓存（资源镜像，可从官方源重建）
-client/cache/
+client/cache/*
+# 例外：钉死补丁缓存四件套（fresh clone 直跑网关必需；完整缓存仍不入库）
+!client/cache/aola.100bt.com
+client/cache/aola.100bt.com/*
+!client/cache/aola.100bt.com/play
+client/cache/aola.100bt.com/play/*
+!client/cache/aola.100bt.com/play/loader.swf
+!client/cache/aola.100bt.com/play/loader.swf.ct
+!client/cache/aola.100bt.com/play/user
+client/cache/aola.100bt.com/play/user/*
+!client/cache/aola.100bt.com/play/user/login.swf
+!client/cache/aola.100bt.com/play/library
+client/cache/aola.100bt.com/play/library/*
+!client/cache/aola.100bt.com/play/library/socketserver.swf
+!client/cache/aola.100bt.com/play/library/socketserver.swf.ct
+!client/cache/aola.100bt.com/play/library/socketserver1.swf
+!client/cache/aola.100bt.com/play/library/socketserver1.swf.ct
 # 工作区截图 / 抓包 / 反汇编中间产物（体积大，保留在磁盘但不入库）
 client/docs/
 # 字体副本（由 client/tools/make_cjk_font.py 从系统字体生成）
@@ -9,8 +25,27 @@ client/web/fonts/
 client/web/ruffle-stable/
 # 第三方依赖
 client/tools/node_modules/
+# 自动化轮次脚本（round126 起不再入库；历史脚本已在版本控制中保留）
+automation/aola_round*.mjs
+automation/aola_round*.py
+# 本地网关运行日志（serve 多种运行模式的 stdout/stderr）
+client/*.log
+# 自动化运行日志与临时辅助脚本
+automation/*.log
+automation/*.ps1
 # 备份文件
 *.bak
 *.prefont
 *.old
 *.old923
+# Ruffle 版本二分运行时（round34；本地保留，不入库；需要时从官方 release 重新下载）
+client/web/ruffle-bisect/
+# 旧默认运行时备份（升级到 11-04 前的 10-31 版本）
+client/web/ruffle.old-10-31/
+# 整合包构建产物与逆向/临时数据（本地保留，不入库）
+/dist/
+/reverse/
+/temp/
+# 低配开关的运行时配置（页面按钮写入，属本机偏好，不入库）
+client/lowfx.json
+client/lowfx.extra

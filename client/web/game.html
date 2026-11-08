@@ -6,16 +6,178 @@
 <style>
   html, body { margin: 0; padding: 0; height: 100%; background: #0b1220; color: #cfe3ff;
                font: 13px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif; }
-  #stage    { width: 960px; height: 560px; margin: 8px auto; position: relative; }
+  /* 窗口比游戏大时把游戏居中（像百田游戏管家那样四周留边），避免缩在左上角。
+     #fit 用 margin:auto 而不是 flex 居中：显示尺寸超过窗口（大倍率档）时
+     margin:auto 会退化为 0，滚动条可以把溢出部分滚出来；flex 居中则双向裁切滚不到。 */
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  /* Round 68/69：渲染像素数恒为 SWF 原生 960×560（画布 1:1，与窗口和缩放档位无关），
+     显示时用 CSS transform 按所选倍率等比放大 —— 同「百田游戏管家」的拉伸显示。
+     transform 不改变布局尺寸，所以 Ruffle 测到的 clientWidth/Height 恒为 960×560，
+     画布后备缓冲就固定 960×560 = 0.54MPx，任何档位下 GPU 光栅化成本不变。 */
+  #fit      { position: relative; width: 960px; height: 560px; margin: auto; }
+  #stage    { position: absolute; left: 0; top: 0; width: 960px; height: 560px;
+              transform-origin: top left; }
   #player   { width: 960px; height: 560px; }
-  #log      { margin: 4px auto; width: 944px; max-height: 180px; overflow-y: auto;
+  /* 页面内日志默认隐藏（网关日志在 logs\gateway-*.log）；URL 加 ?log=1 才显示 */
+  #log      { display: none; margin: 4px auto; width: 960px; max-height: 180px; overflow-y: auto;
               background: #101a2e; border: 1px solid #23304d; border-radius: 4px;
               padding: 6px 10px; white-space: pre-wrap; word-break: break-all; }
+   /* 悬浮刷新按钮：重载引导链（票据保留，重载后回到 AutoLoginPage） */
+   #reload-btn { position: fixed; right: 14px; bottom: 14px; z-index: 9999;
+                 padding: 6px 14px; border-radius: 16px; border: 1px solid #3a5b8f;
+                 background: rgba(20, 32, 56, .85); color: #cfe3ff; cursor: pointer;
+                 font: 13px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+                 opacity: .72; transition: opacity .15s, background .15s; }
+   #reload-btn:hover  { opacity: 1; background: rgba(38, 60, 100, .95); }
+   #reload-btn:active { transform: translateY(1px); }
+   /* 页面大小选择器（Round 69）：五档显示倍率，渲染分辨率不受影响 */
+   #scale-box { position: fixed; right: 14px; bottom: 54px; z-index: 9999;
+                display: flex; align-items: center; gap: 6px;
+                padding: 5px 12px; border-radius: 16px; border: 1px solid #3a5b8f;
+                background: rgba(20, 32, 56, .85); color: #cfe3ff;
+                font: 13px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+                opacity: .72; transition: opacity .15s, background .15s; }
+   #scale-box:hover  { opacity: 1; background: rgba(38, 60, 100, .95); }
+   #scale-box label  { cursor: default; white-space: nowrap; }
+   #scale-sel { background: #16233b; color: #d7e6ff; border: 1px solid #3a5b8f;
+                border-radius: 5px; padding: 2px 4px; outline: none; cursor: pointer;
+                font: 12px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif; }
+   /* 低配/特效开关面板（Round 45）：按钮形式，用户自己决定开哪些 */
+   #fx-toggle { position: fixed; left: 14px; bottom: 14px; z-index: 9999;
+                padding: 6px 14px; border-radius: 16px; border: 1px solid #3a5b8f;
+                background: rgba(20, 32, 56, .85); color: #cfe3ff; cursor: pointer;
+                font: 13px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+                opacity: .72; transition: opacity .15s, background .15s; }
+   #fx-toggle:hover  { opacity: 1; background: rgba(38, 60, 100, .95); }
+   #fx-panel { position: fixed; left: 14px; bottom: 54px; z-index: 9999; width: 320px;
+               background: rgba(12, 20, 36, .96); border: 1px solid #2d4a78; border-radius: 8px;
+               padding: 10px 12px 8px; box-shadow: 0 8px 28px rgba(0,0,0,.55);
+               font: 13px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif; }
+   #fx-panel[hidden] { display: none; }
+   .fx-title { font-weight: 600; margin-bottom: 6px; color: #e6f0ff; }
+   .fx-sub   { color: #8fb0d8; font-size: 12px; margin: -4px 0 8px; }
+   .fx-row   { display: flex; align-items: flex-start; gap: 6px; padding: 3px 0; cursor: pointer; }
+   .fx-row input { margin: 3px 0 0; accent-color: #4a86d8; }
+   .fx-row.fx-adv { color: #a9c3e4; }
+   .fx-ind { padding-left: 18px; }
+   .fx-group { margin: 8px 0 2px; font-weight: 600; font-size: 12px; color: #7fa6d6;
+               border-bottom: 1px solid #21395c; padding-bottom: 2px; }
+   .fx-row.fx-lock { opacity: .55; cursor: not-allowed; }
+   .fx-btns  { display: flex; gap: 6px; margin-top: 8px; }
+   .fx-btns button { flex: 1; padding: 5px 0; border-radius: 5px; cursor: pointer;
+                     border: 1px solid #3a5b8f; background: #16233b; color: #d7e6ff;
+                     font: 12px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif; }
+   .fx-btns button:hover { background: #1e3152; }
+   #fx-apply { background: #1d4f8a; border-color: #3c74b8; }
+   #fx-apply:hover { background: #2560a6; }
+   #fx-live { background: #1d5f3f; border-color: #2f8f5b; }
+   #fx-live:hover { background: #257a4f; }
+   #fx-hint { color: #8fb0d8; font-size: 12px; min-height: 16px; margin-top: 6px; }
 </style>
 </head>
 <body>
-<div id="stage"></div>
+<div id="fit"><div id="stage"></div></div>
 <div id="log"></div>
+ <div id="scale-box" title="页面显示大小（渲染分辨率恒为官方原生的 960×560，档位只影响显示倍率）">
+   <label for="scale-sel">页面大小</label>
+   <select id="scale-sel">
+     <option value="" disabled hidden>—</option>
+     <option value="100">100%</option>
+     <option value="125">125%</option>
+     <option value="150">150%</option>
+     <option value="175">175%</option>
+     <option value="200">200%</option>
+   </select>
+ </div>
+ <button id="reload-btn" type="button" title="重新加载游戏（等同 F5）"
+         onclick="location.reload()">⟳ 刷新游戏</button>
+ <button id="fx-toggle" type="button" title="低配 / 特效开关">⚙ 特效开关</button>
+ <div id="fx-panel" hidden>
+   <div class="fx-title">特效开关（勾选 = 屏蔽）</div>
+   <div class="fx-sub">按类型分开控制。「局内即时」不刷新，新加载的资源马上按新开关生效；「应用并刷新」重载游戏，全部干净生效。</div>
+   <label class="fx-row"><input type="checkbox" data-key="enterGq"> 光启进场特效</label>
+   <label class="fx-row"><input type="checkbox" data-key="enterXh"> 星辉进场特效</label>
+   <label class="fx-row"><input type="checkbox" data-key="buffGq"> 光启buff特效</label>
+   <label class="fx-row"><input type="checkbox" data-key="petBackground"> 专属战斗背景</label>
+   <div class="fx-btns">
+     <button id="fx-live" type="button" title="不刷新游戏；战斗中新加载的资源立即按新开关生效">局内即时</button>
+     <button id="fx-apply" type="button">应用并刷新</button>
+     <button id="fx-allon" type="button">全开</button>
+     <button id="fx-alloff" type="button">全关</button>
+   </div>
+   <div id="fx-hint"></div>
+ </div>
+<script>
+// ==================== Round 68/69：渲染像素固定 960×560 + 页面大小五档 ====================
+// 渲染逻辑与官方（Flash 运行时）对齐：画布后备缓冲恒为 SWF 原生 960×560（0.54MPx），
+// 与窗口大小、显示倍率都无关 —— 显示放大是纯展示层的 CSS transform，不参与布局，
+// 所以 Ruffle 量到的 clientWidth/Height 永远 960×560，画布后备缓冲不会变大。
+// 尺寸逻辑：页面大小五档 100/125/150/175/200%（100% = 官方原生 1:1），
+// 选择即时生效并写入 localStorage（跨刷新持久）。
+// 优先级：页面手选（localStorage）> URL ?scale=（测试/强制用）> 默认 100%。
+// 放大超出窗口时靠 #fit margin:auto 出滚动条（见上方 CSS 注释）。?log=1 显示页面日志。
+(function () {
+  var q = new URLSearchParams(location.search);
+  // Round 70c：开发模式默认显示页面调试日志；?log=0 关闭（整合包启动器带此参数保持界面干净）
+  var showLog = q.get("log") !== "0";
+  var fitEl = document.getElementById("fit");
+  var stageEl = document.getElementById("stage");
+  var logEl = document.getElementById("log");
+  var selEl = document.getElementById("scale-sel");
+  var NATIVE_W = 960, NATIVE_H = 560;
+  var SCALE_KEY = "aola_page_scale";
+  var PCT = [100, 125, 150, 175, 200];   // 页面大小五档（%）
+
+  if (showLog && logEl) {
+    logEl.style.display = "block";
+    logEl.style.width = NATIVE_W + "px";
+  }
+
+  function storedScale() {
+    try {
+      var v = parseFloat(localStorage.getItem(SCALE_KEY));
+      if (isFinite(v) && v >= 1 && v <= 2) return v;
+    } catch (e) {}
+    return null;
+  }
+
+  function resolveK() {
+    var s = storedScale();
+    if (s !== null) return s;                                          // 手选 > 一切
+    var forced = parseFloat(q.get("scale") || "");
+    if (isFinite(forced) && forced >= 0.5 && forced <= 4) return forced; // URL 强制（测试/旧启动器）
+    return 1;                                                          // 默认：官方原生 1:1
+  }
+
+  function apply() {
+    var k = resolveK();
+    stageEl.style.transform = "scale(" + k + ")";
+    fitEl.style.width = Math.round(NATIVE_W * k) + "px";
+    fitEl.style.height = Math.round(NATIVE_H * k) + "px";
+    window.__FIT_K = k;
+    // 选择器同步：k 在五档内选中对应项；非标值（如 URL 强制 1.3）显示占位
+    if (selEl) {
+      var pct = Math.round(k * 100), hit = PCT.indexOf(pct);
+      selEl.value = hit >= 0 ? String(pct) : "";
+    }
+  }
+
+  if (selEl) {
+    selEl.addEventListener("change", function () {
+      var pct = parseInt(selEl.value, 10);
+      if (PCT.indexOf(pct) < 0) return;
+      try { localStorage.setItem(SCALE_KEY, String(pct / 100)); } catch (e) {}
+      apply();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+</script>
 <script>
 "use strict";
 // ==================== P0 网络重写层 ====================
@@ -209,7 +371,7 @@ window.showWebLogin = function (loginUrl) {
   } catch (e) {}
   var frame = document.createElement("iframe");
   frame.id = "loginFrame";
-  frame.style.cssText = "position:absolute;left:0;top:0;width:960px;height:560px;" +
+  frame.style.cssText = "position:absolute;left:0;top:0;width:1152px;height:672px;" +
                         "border:0;background:#fff;z-index:9;";
   frame.src = String(loginUrl);
   var stage = document.getElementById("stage");
@@ -272,7 +434,7 @@ if (window.top !== window) {
   // 会把整串 Cookie 当 token 发 newLogin → <r><result>invalid</result></r>
   if (/%3D/i.test(raw) && raw.indexOf(",") < 0) {
     raw = decodeURIComponent(raw);
-    document.cookie = "game_auth_sid=" + raw + "; path=/";
+    document.cookie = "game_auth_sid=" + raw + "; path=/; max-age=31536000";
     log("game_auth_sid 服务器编码格式已解码为组合格式，重载生效");
     setTimeout(function () { location.reload(); }, 300);
     return;
@@ -283,7 +445,7 @@ if (window.top !== window) {
     // 上游 WAF 回 500。重写为纯 ASCII 版（gameName 百分号编码；loader 只用
     // duoduoId/token，gameName 乱码无碍）。
     var fixed = raw.replace(/gameName=[^,]*/, "gameName=%E5%A5%A5%E6%8B%89%E6%98%9F");
-    document.cookie = "game_auth_sid=" + fixed + "; path=/";
+    document.cookie = "game_auth_sid=" + fixed + "; path=/; max-age=31536000";
     log("game_auth_sid 已 ASCII 化，重载生效");
     setTimeout(function () { location.reload(); }, 300);
     return;
@@ -293,7 +455,7 @@ if (window.top !== window) {
   // （实测官方格式：gameId=2,gameName=...,duoduoId=...,token=...,autoLogin=true）
   var composed = "gameId=2,gameName=%E5%A5%A5%E6%8B%89%E6%98%9F,duoduoId=" +
                  qsValue("duoduoId") + ",token=" + raw + ",autoLogin=true";
-  document.cookie = "game_auth_sid=" + composed + "; path=/";
+  document.cookie = "game_auth_sid=" + composed + "; path=/; max-age=31536000";
   log("game_auth_sid 已组合为 WebLoginData 格式，重载生效");
   try { navigator.sendBeacon("/report", JSON.stringify(
     { t: new Date().toISOString(), kind: "cookieCompose", duoduoId: qsValue("duoduoId") })); } catch (e) {}
@@ -350,9 +512,11 @@ if (window.top !== window) {
           completeCaptcha(j);
         } else if (j.cmd === "setCookies" && j.cookies && j.cookies.length) {
           // 已完成的登录会话 Cookie 注入（loader 经 getCookie EI 读取）
+          // Round 70c：加 max-age 持久化 —— 之前是会话 Cookie，浏览器一关就丢，
+          // 下次启动直接退回「网页登录 iframe」→ Chromium 无 Flash → 插件不受支持
           j.cookies.forEach(function (c) {
             try {
-              document.cookie = c.name + "=" + c.value + "; path=/";
+              document.cookie = c.name + "=" + c.value + "; path=/; max-age=31536000";
               log("注入登录 Cookie: " + c.name);
             } catch (e) {}
           });
@@ -367,6 +531,21 @@ if (window.top !== window) {
       })
       .catch(function () {});
   }, 2000);
+})();
+
+// ==================== 渲染分辨率钳制（Round 64）====================
+// Ruffle 按 devicePixelRatio 分配 canvas 后备缓冲：DPR=1.5 时 1152x672 的舞台
+// 实际渲染 1728x1008 = 1.74MPx，比 CSS 面积多 125% 像素。
+// 实测（Intel UHD + ANGLE/D3D11）：DPR 1.5→1.0，背包切宠 11.2→19.3fps、帧间隔 92→54ms。
+// 这里把 DPR 钳到 <=1（画布像素减半，视觉上仅轻微变软），CSS 布局尺寸不受影响。
+// 需要原生高清时：URL 加 ?hidpi=1，或在启动器加 --force-device-scale-factor=1（等价）。
+(function () {
+  if (new URLSearchParams(location.search).get("hidpi") === "1") return;
+  var real = window.devicePixelRatio || 1;
+  if (real <= 1) return;
+  try {
+    Object.defineProperty(window, "devicePixelRatio", { get: function () { return 1; }, configurable: true });
+  } catch (e) {}
 })();
 
 // ==================== Ruffle 装载 ====================
@@ -384,12 +563,22 @@ window.RufflePlayer = window.RufflePlayer || {};window.RufflePlayer.config = {
   // 注意：字体数量会拖慢 Ruffle（切精灵/魂卡编辑），这里只保留最小集，勿随意增加。
   fontSources: [
     "/fonts/songti.ttf", "/fonts/songti_b.ttf",
-    "/fonts/yahei.ttf", "/fonts/yahei_b.ttf", "/fonts/hanyi.ttf"
-  ],
-  defaultFonts: {
-    "宋体": "/fonts/songti.ttf",
-    "微软雅黑": "/fonts/yahei.ttf"
-  },
+    "/fonts/yahei.ttf", "/fonts/yahei_b.ttf", "/fonts/hanyi.ttf",
+     "/fonts/lingxin.ttf",  // 汉仪菱心体简（背包预设阵容名等展示文本）
+     "/fonts/hanyi60.ttf",      // 汉仪旗黑-60S Regular（达人王等活动面板任务文本）
+     "/fonts/yahei_bold.ttf"    // FULL_NAME=「微软雅黑 Bold」（部分控件直接请求这个族名）
+   ],
+   defaultFonts: {
+     // key 必须是 Ruffle 固定槽位（sans/serif/typewriter/japanese*），值必须是「已注册的设备字体名」
+     // （即字体文件的 FULL_NAME，如「宋体」）——不是 URL。原先写成 URL / 中文 key 都无效，
+     // 导致设备字体解析失败时回退到内置 Noto Sans（无 CJK）→ 中文整段丢失只剩数字。
+     "sans": ["宋体"],
+     "serif": ["宋体"],
+     "typewriter": ["宋体"],
+     "japaneseGothic": ["宋体"],
+     "japaneseGothicMono": ["宋体"],
+     "japaneseMincho": ["宋体"]
+   },
   socketProxy: [
     // <svr> 全量端点（newlogin_resp_real.xml 22.5KB 票据，44 个 host:port）
     // 动态分配的 socket 全部经 facade 的 WS↔TCP 隧道透传
@@ -464,7 +653,9 @@ window.addEventListener("load", function () {
       log("player loadedmetadata " + player.metadata
         ? JSON.stringify(player.metadata).slice(0, 200) : "");
     });
-    var url = "/mirror/aola.100bt.com/play/start~2107300001.swf";
+    // Round 70：入口用无版本后缀的 start.swf（上游弱校验实测与 start~2107300001.swf 字节一致），
+    // 且它在网关「清单网络优先」白名单里 —— 每次启动回源拿最新引导，不再钉死旧版本号
+    var url = "/mirror/aola.100bt.com/play/start.swf";
     log("loading " + url);
     player.load({
       url: url,
@@ -482,6 +673,100 @@ window.addEventListener("load", function () {
   }
 });
 </script>
-<script src="/ruffle/ruffle.js"></script>
+<script>
+  // Ruffle 版本二分（round34）：URL 带 ?ruffle-bisect=<version> 时改用 /ruffle-bisect/<version>/ruffle.js
+  (function () {
+    var v = new URLSearchParams(location.search).get("ruffle-bisect");
+    var src = v ? "/ruffle-bisect/" + encodeURIComponent(v) + "/ruffle.js" : "/ruffle/ruffle.js";
+    document.write('<script src="' + src + '"><\/script>');
+  })();
+</script>
+<script>
+  // ==================== 特效开关面板（Round 45；58 局内即时应用；59 文案精简+光启/星辉进场拆分） ====================
+  // 勾选状态来自网关 /status 同源的 /lowfx；POST 回去写 client/lowfx.json，网关按 mtime 秒级生效。
+  // 开关在网关是「资源请求时」判定的：「局内即时」不刷新，之后新请求的 SWF 立即按新开关走，
+  // 已加载进 Ruffle 的资源不回收；要彻底干净（含 Ruffle 内存缓存）用「应用并刷新」reload 一次。
+  (function () {
+    var panel = document.getElementById("fx-panel");
+    var toggle = document.getElementById("fx-toggle");
+    var hint = document.getElementById("fx-hint");
+    var boxes = [].slice.call(panel.querySelectorAll("input[data-key]"));
+    var applyBtn = document.getElementById("fx-apply");
+    var liveBtn = document.getElementById("fx-live");
+
+    function setHint(t) { hint.textContent = t || ""; }
+
+    function fill(flags) {
+      boxes.forEach(function (b) {
+        var k = b.getAttribute("data-key");
+        var v;
+        if (k === "petBackground") v = !!flags.petBackground || !!flags.bgSkill;
+        else if (k === "startmv") v = flags.startmv === "1" || flags.startmv === "skip";
+        else v = !!flags[k];
+        b.checked = v;
+      });
+    }
+
+    function load() {
+      setHint("读取中…");
+      fetch("/lowfx", { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.flags) throw new Error("bad response");
+          fill(j.flags);
+          setHint("当前：已按网关生效状态显示");
+        })
+        .catch(function (e) { setHint("读取失败：" + (e && e.message || e)); });
+    }
+
+    function payload() {
+      var out = {};
+      boxes.forEach(function (b) {
+        var k = b.getAttribute("data-key");
+        if (k === "petBackground") { out.petBackground = b.checked ? "1" : "off"; out.bgSkill = !!b.checked; }
+        else if (k === "startmv") out.startmv = b.checked ? "1" : "off";
+        else out[k] = b.checked;
+      });
+      return out;
+    }
+
+    function save(reload) {
+      var btn = reload ? applyBtn : liveBtn;
+      btn.disabled = true;
+      setHint("正在应用…");
+      fetch("/lowfx", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload()) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.ok) throw new Error((j && j.error) || "save failed");
+          if (reload) {
+            setHint("已应用，正在刷新游戏…");
+            setTimeout(function () { location.reload(); }, 350);
+          } else {
+            btn.disabled = false;
+            setHint("已应用（局内即时）：之后新加载的资源按新开关生效；已加载的不受影响，要彻底干净请「应用并刷新」");
+          }
+        })
+        .catch(function (e) {
+          btn.disabled = false;
+          setHint("应用失败：" + (e && e.message || e));
+        });
+    }
+
+    toggle.addEventListener("click", function () {
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) load();
+    });
+    applyBtn.addEventListener("click", function () { save(true); });
+    liveBtn.addEventListener("click", function () { save(false); });
+    document.getElementById("fx-allon").addEventListener("click", function () {
+      boxes.forEach(function (b) { b.checked = true; });
+      setHint("已全选，点「局内即时」或「应用并刷新」生效");
+    });
+    document.getElementById("fx-alloff").addEventListener("click", function () {
+      boxes.forEach(function (b) { b.checked = false; });
+      setHint("已全不选（= 原样），点「局内即时」或「应用并刷新」生效");
+    });
+  })();
+</script>
 </body>
 </html>
