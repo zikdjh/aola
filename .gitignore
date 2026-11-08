@@ -57,3 +57,5 @@ client/lowfx.extra
 
 # 一次性推送重试脚本（本地工具，不入库）
 push_retry_70f.cjs
+# 临时逆向工作目录（不入库）
+.rework/
